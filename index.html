@@ -10,10 +10,10 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
-      --bg-deep: #06080f;
-      --bg-surface: #0d121f;
-      --bg-card: rgba(17, 24, 39, 0.82);
-      --bg-card-hover: rgba(24, 34, 56, 0.95);
+      --bg-deep: #05070d;
+      --bg-surface: #0b101d;
+      --bg-card: rgba(16, 23, 38, 0.85);
+      --bg-card-hover: rgba(24, 34, 56, 0.96);
       --border: rgba(255, 255, 255, 0.08);
       --border-red: rgba(229, 9, 20, 0.45);
       --red: #e50914;
@@ -36,9 +36,9 @@
     body {
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 10% 8%, rgba(229, 9, 20, 0.14), transparent 30%),
-        radial-gradient(circle at 88% 12%, rgba(109, 40, 217, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 92%, rgba(229, 9, 20, 0.07), transparent 40%);
+        radial-gradient(circle at 10% 6%, rgba(229, 9, 20, 0.14), transparent 28%),
+        radial-gradient(circle at 88% 12%, rgba(109, 40, 217, 0.11), transparent 32%),
+        radial-gradient(circle at 50% 92%, rgba(229, 9, 20, 0.07), transparent 38%);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
@@ -73,25 +73,25 @@
     .navbar {
       position: sticky;
       top: 0;
-      z-index: 100;
-      background: rgba(6, 8, 15, 0.9);
+      z-index: 120;
+      background: rgba(5, 7, 13, 0.9);
       backdrop-filter: blur(22px);
       border-bottom: 1px solid var(--border);
-      padding: 0.75rem 1.4rem;
+      padding: 0.72rem 1.4rem;
     }
     .nav-container {
-      max-width: 1360px;
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.2rem;
+      gap: 1rem;
       flex-wrap: wrap;
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
+      gap: 0.75rem;
       text-decoration: none;
       color: var(--text);
     }
@@ -110,13 +110,13 @@
     .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
     .brand-title { font-size: 1.38rem; font-weight: 900; letter-spacing: 0.5px; }
     .brand-title span { color: var(--red); }
-    .brand-sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+    .brand-sub { font-size: 0.71rem; color: var(--text-muted); font-weight: 700; }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      background: rgba(15, 23, 42, 0.7);
+      gap: 0.3rem;
+      background: rgba(15, 23, 42, 0.72);
       border: 1px solid var(--border);
       padding: 0.32rem;
       border-radius: 14px;
@@ -125,15 +125,15 @@
     .nav-link {
       text-decoration: none;
       color: var(--text-muted);
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 800;
-      padding: 0.46rem 1.05rem;
+      padding: 0.44rem 0.92rem;
       border-radius: 10px;
       transition: all 0.22s ease;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
     .nav-link:hover {
       color: #fff;
@@ -159,7 +159,7 @@
       color: #ff6b72;
       padding: 0.42rem 0.95rem;
       border-radius: 99px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 800;
     }
     .live-dot {
@@ -172,10 +172,125 @@
 
     /* --- MAIN CONTAINER --- */
     .container {
-      max-width: 1360px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 1.4rem 1.2rem 4rem;
+      padding: 1.3rem 1.2rem 4rem;
     }
+
+    /* --- CINEMATIC HERO BILLBOARD (SHABAKATY / NETFLIX STYLE) --- */
+    .hero-billboard {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 390px;
+      margin-bottom: 1.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: flex-end;
+      background-size: cover;
+      background-position: center 20%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+      transition: background-image 0.6s ease;
+    }
+    .hero-billboard::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to left, rgba(5, 7, 13, 0.96) 28%, rgba(5, 7, 13, 0.68) 65%, rgba(5, 7, 13, 0.35)),
+                  linear-gradient(to top, rgba(5, 7, 13, 0.98) 12%, transparent 65%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 2.2rem 2.2rem;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .hero-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+    .hero-tag {
+      background: var(--red);
+      color: #fff;
+      font-size: 0.74rem;
+      font-weight: 900;
+      padding: 0.24rem 0.75rem;
+      border-radius: 99px;
+      letter-spacing: 0.4px;
+    }
+    .hero-imdb {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+      font-size: 0.78rem;
+      font-weight: 900;
+      padding: 0.22rem 0.7rem;
+      border-radius: 8px;
+    }
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      text-shadow: 0 6px 24px rgba(0,0,0,0.8);
+    }
+    @media (max-width: 640px) {
+      .hero-title { font-size: 1.55rem; }
+      .hero-content { padding: 1.4rem; }
+      .hero-billboard { min-height: 310px; }
+    }
+    .hero-desc {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .hero-btns {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.3rem;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      background: linear-gradient(135deg, #e50914, #b0060f);
+      color: #fff;
+      border: none;
+      padding: 0.68rem 1.45rem;
+      border-radius: 13px;
+      font-size: 0.9rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 28px var(--red-glow);
+      transition: all 0.25s;
+      text-decoration: none;
+    }
+    .btn-hero-primary:hover { transform: translateY(-3px) scale(1.03); }
+    .btn-hero-sec {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 0.68rem 1.3rem;
+      border-radius: 13px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-decoration: none;
+    }
+    .btn-hero-sec:hover { background: rgba(255, 255, 255, 0.18); }
 
     /* --- SSR SEO BANNER CARD --- */
     .seo-banner-card {
@@ -196,83 +311,54 @@
       border-radius: 99px;
       margin-bottom: 0.55rem;
     }
-    .seo-banner-card h1 {
-      font-size: 1.35rem;
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 0.45rem;
-    }
-    .seo-banner-card p {
-      font-size: 0.88rem;
-      color: #cbd5e1;
-      line-height: 1.75;
-    }
+    .seo-banner-card h1 { font-size: 1.35rem; font-weight: 900; color: #fff; margin-bottom: 0.45rem; }
+    .seo-banner-card p { font-size: 0.88rem; color: #cbd5e1; line-height: 1.75; }
 
-    /* --- PAGE HEADER BAR --- */
-    .page-title-bar {
+    /* --- SECTION HEADER BAR --- */
+    .sec-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
+      margin: 2rem 0 1rem;
       gap: 0.8rem;
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.85rem;
-      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
     }
-    .page-title-bar h2 {
-      font-size: 1.3rem;
+    .sec-title {
+      font-size: 1.22rem;
       font-weight: 900;
+      color: #fff;
       display: flex;
       align-items: center;
       gap: 0.55rem;
     }
-    .page-title-bar h2::before {
-      content: "";
+    .sec-title span {
       width: 5px;
       height: 22px;
       background: var(--red);
       border-radius: 99px;
       display: inline-block;
     }
+    .sec-more {
+      color: #ff5b64;
+      font-size: 0.84rem;
+      font-weight: 800;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: transform 0.2s;
+    }
+    .sec-more:hover { transform: translateX(-4px); }
 
     /* --- 5 BEIN CHANNELS HERO DOCK --- */
-    .channels-dock-wrap {
-      margin-bottom: 1.5rem;
-    }
-    .dock-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .dock-title {
-      font-size: 1.02rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #e2e8f0;
-    }
-    .dock-title span {
-      background: var(--red);
-      width: 4px;
-      height: 18px;
-      border-radius: 99px;
-      display: inline-block;
-    }
+    .channels-dock-wrap { margin-bottom: 1.6rem; }
     .bein-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 0.85rem;
     }
-    @media (max-width: 960px) {
-      .bein-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 580px) {
-      .bein-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 960px) { .bein-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 580px) { .bein-grid { grid-template-columns: repeat(2, 1fr); } }
     .bein-card {
       position: relative;
       background: linear-gradient(145deg, rgba(22, 30, 49, 0.9), rgba(11, 16, 28, 0.95));
@@ -302,21 +388,12 @@
       border-color: var(--border-red);
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45), 0 0 20px rgba(229, 9, 20, 0.18);
     }
-    .bein-card:hover::before,
-    .bein-card.active::before {
-      opacity: 1;
-    }
+    .bein-card:hover::before, .bein-card.active::before { opacity: 1; }
     .bein-card.active {
       border-color: var(--red);
       box-shadow: 0 10px 28px rgba(229, 9, 20, 0.32);
     }
-    .bein-left {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+    .bein-left { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.75rem; }
     .bein-num-badge {
       width: 42px;
       height: 42px;
@@ -345,29 +422,13 @@
       border: 1px solid rgba(245, 158, 11, 0.35);
       margin-left: 4px;
     }
-    .bein-status {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      height: 18px;
-    }
-    .eq-bar {
-      width: 3px;
-      height: 6px;
-      background: var(--red);
-      border-radius: 99px;
-      opacity: 0.45;
-    }
-    .bein-card.active .eq-bar {
-      opacity: 1;
-      animation: eqBar 0.8s ease-in-out infinite;
-    }
+    .bein-status { position: relative; z-index: 1; display: flex; align-items: center; gap: 3px; height: 18px; }
+    .eq-bar { width: 3px; height: 6px; background: var(--red); border-radius: 99px; opacity: 0.45; }
+    .bein-card.active .eq-bar { opacity: 1; animation: eqBar 0.8s ease-in-out infinite; }
     .bein-card.active .eq-bar:nth-child(2) { animation-delay: 0.2s; }
     .bein-card.active .eq-bar:nth-child(3) { animation-delay: 0.4s; }
 
-    /* --- CUSTOM BRANDED VIDEO PLAYER STAGE --- */
+    /* --- CUSTOM BRANDED VIDEO PLAYER STAGE (LIVE TV + VOD 6-SERVERS) --- */
     .player-stage {
       background: #05070d;
       border: 1px solid rgba(229, 9, 20, 0.35);
@@ -387,11 +448,7 @@
       flex-wrap: wrap;
       gap: 0.75rem;
     }
-    .now-playing-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+    .now-playing-info { display: flex; align-items: center; gap: 0.75rem; }
     .np-badge {
       background: var(--red);
       color: #fff;
@@ -418,27 +475,82 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-player-top:hover {
-      background: var(--red);
-      border-color: var(--red);
+    .btn-player-top:hover { background: var(--red); border-color: var(--red); }
+
+    /* VOD 6-Servers & Season/Episode Bar */
+    .vod-servers-bar {
+      display: none;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.9rem 1.25rem;
+      background: #090d18;
+      border-bottom: 1px solid var(--border);
+    }
+    .vod-srv-list {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .vod-srv-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      padding: 0.42rem 0.95rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .vod-srv-btn:hover { color: #fff; border-color: var(--border-red); }
+    .vod-srv-btn.active {
+      background: linear-gradient(135deg, #e50914, #990008);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px var(--red-glow);
+    }
+    .vod-ep-selector {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      padding-top: 0.45rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .vod-select {
+      background: #05070d;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.4rem 0.85rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      outline: none;
+      cursor: pointer;
     }
 
     .video-viewport {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      max-height: 620px;
+      max-height: 630px;
       background: #000;
       overflow: hidden;
       user-select: none;
     }
-    video#liveVideo {
+    video#liveVideo, iframe#vodIframe {
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: #000;
       display: block;
+      border: none;
     }
+    iframe#vodIframe { display: none; }
 
     .player-watermark {
       position: absolute;
@@ -512,11 +624,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .ctrl-btn:hover {
-      background: var(--red);
-      border-color: var(--red);
-      transform: scale(1.06);
-    }
+    .ctrl-btn:hover { background: var(--red); border-color: var(--red); transform: scale(1.06); }
     .ctrl-btn svg { width: 18px; height: 18px; fill: currentColor; }
     .vol-slider { width: 82px; accent-color: var(--red); cursor: pointer; }
     .live-indicator-bar {
@@ -532,6 +640,121 @@
       color: #fff;
     }
 
+    /* --- MOVIES / SERIES / ANIME POSTER CARDS --- */
+    .vod-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+      gap: 1.15rem;
+    }
+    @media (max-width: 520px) {
+      .vod-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+    }
+    .vod-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeUp 0.35s ease backwards;
+    }
+    .vod-card:hover {
+      transform: translateY(-7px) scale(1.02);
+      border-color: var(--red);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65), 0 0 22px rgba(229, 9, 20, 0.25);
+    }
+    .vod-poster-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: #0d1322;
+      overflow: hidden;
+    }
+    .vod-poster-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.45s ease;
+    }
+    .vod-card:hover .vod-poster-wrap img { transform: scale(1.08); }
+    .vod-rating-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(5, 7, 13, 0.84);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+      font-size: 0.73rem;
+      font-weight: 900;
+      padding: 0.18rem 0.5rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .vod-qual-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.66rem;
+      font-weight: 900;
+      padding: 0.15rem 0.48rem;
+      border-radius: 6px;
+    }
+    .vod-hover-play {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(5, 7, 13, 0.92), rgba(229, 9, 20, 0.22));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+    .vod-card:hover .vod-hover-play { opacity: 1; }
+    .play-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--red);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px var(--red-glow);
+    }
+    .play-circle svg { width: 24px; height: 24px; fill: #fff; }
+    .vod-body {
+      padding: 0.75rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.22rem;
+    }
+    .vod-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vod-sub {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
     /* --- LEAGUE NAVIGATION PILLS --- */
     .leagues-bar {
       display: flex;
@@ -539,29 +762,25 @@
       gap: 0.6rem;
       overflow-x: auto;
       padding-bottom: 0.6rem;
-      margin-bottom: 1.3rem;
+      margin-bottom: 1.2rem;
     }
     .league-pill {
       flex-shrink: 0;
       background: var(--bg-card);
       border: 1px solid var(--border);
       color: var(--text-muted);
-      padding: 0.6rem 1.15rem;
+      padding: 0.56rem 1.1rem;
       border-radius: 14px;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
       transition: all 0.25s ease;
       text-decoration: none;
     }
-    .league-pill:hover {
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.22);
-      transform: translateY(-2px);
-    }
+    .league-pill:hover { color: #fff; border-color: rgba(255, 255, 255, 0.22); transform: translateY(-2px); }
     .league-pill.active {
       background: linear-gradient(135deg, #e50914, #990008);
       color: #fff;
@@ -575,26 +794,21 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      margin-bottom: 1.4rem;
+      margin-bottom: 1.3rem;
       flex-wrap: wrap;
       background: rgba(13, 18, 31, 0.75);
       border: 1px solid var(--border);
-      padding: 0.75rem 1rem;
+      padding: 0.72rem 1rem;
       border-radius: 16px;
     }
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      flex-wrap: wrap;
-    }
+    .filter-group { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
     .filter-btn {
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-muted);
-      padding: 0.45rem 0.95rem;
+      padding: 0.42rem 0.9rem;
       border-radius: 10px;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 800;
       cursor: pointer;
       transition: all 0.2s;
@@ -606,13 +820,13 @@
       border-color: var(--border-red);
     }
     .search-box {
-      background: rgba(6, 8, 15, 0.8);
+      background: rgba(6, 8, 15, 0.85);
       border: 1px solid var(--border);
       color: #fff;
       padding: 0.48rem 0.95rem;
       border-radius: 11px;
       font-size: 0.84rem;
-      min-width: 220px;
+      min-width: 230px;
       outline: none;
     }
     .search-box:focus { border-color: var(--red); }
@@ -620,25 +834,21 @@
     /* --- MATCHES GRID --- */
     .matches-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
       gap: 1rem;
     }
-    @media (max-width: 480px) {
-      .matches-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 480px) { .matches-grid { grid-template-columns: 1fr; } }
     .match-card {
       background: var(--bg-card);
       backdrop-filter: blur(14px);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 1.1rem 1.2rem;
+      padding: 1.05rem 1.15rem;
       display: flex;
       flex-direction: column;
-      gap: 0.95rem;
+      gap: 0.9rem;
       transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
       animation: fadeUp 0.35s ease backwards;
-      position: relative;
-      overflow: hidden;
     }
     .match-card:hover {
       transform: translateY(-5px);
@@ -650,16 +860,15 @@
       border-color: rgba(229, 9, 20, 0.55);
       box-shadow: 0 10px 30px rgba(229, 9, 20, 0.14);
     }
-
     .mc-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.77rem;
+      font-size: 0.76rem;
       color: var(--text-muted);
       font-weight: 700;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding-bottom: 0.55rem;
+      padding-bottom: 0.5rem;
     }
     .mc-comp { display: flex; align-items: center; gap: 0.45rem; }
     .mc-comp img { width: 20px; height: 20px; object-fit: contain; }
@@ -676,23 +885,16 @@
       color: #ff6b72;
       border: 1px solid var(--border-red);
     }
-
     .mc-teams {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
       gap: 0.65rem;
     }
-    .team-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.45rem;
-    }
+    .team-col { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.4rem; }
     .team-logo-wrap {
-      width: 54px;
-      height: 54px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.07);
@@ -704,59 +906,44 @@
     }
     .match-card:hover .team-logo-wrap { transform: scale(1.08); }
     .team-logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
-    .team-name { font-size: 0.9rem; font-weight: 800; color: #fff; line-height: 1.25; }
-
-    .mc-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 86px;
-    }
+    .team-name { font-size: 0.88rem; font-weight: 800; color: #fff; line-height: 1.25; }
+    .mc-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 82px; }
     .score-box {
-      font-size: 1.65rem;
+      font-size: 1.55rem;
       font-weight: 900;
       letter-spacing: 2px;
       color: #fff;
       background: rgba(6, 8, 15, 0.7);
-      padding: 0.25rem 0.85rem;
+      padding: 0.22rem 0.8rem;
       border-radius: 12px;
       border: 1px solid var(--border);
     }
     .time-box {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 900;
       color: var(--gold);
       background: rgba(245, 158, 11, 0.12);
       border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 0.3rem 0.75rem;
+      padding: 0.28rem 0.7rem;
       border-radius: 10px;
     }
-
     .mc-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-top: 0.65rem;
+      padding-top: 0.6rem;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       gap: 0.5rem;
     }
-    .mc-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 0.1rem;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
+    .mc-meta { display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.74rem; color: var(--text-muted); font-weight: 700; }
     .mc-meta b { color: #e2e8f0; }
     .btn-watch-match {
       background: linear-gradient(135deg, #e50914, #b80710);
       color: #fff;
       border: none;
-      padding: 0.48rem 1rem;
+      padding: 0.46rem 0.95rem;
       border-radius: 11px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
@@ -766,43 +953,16 @@
       transition: all 0.22s ease;
       text-decoration: none;
     }
-    .btn-watch-match:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 24px rgba(229, 9, 20, 0.5);
-    }
+    .btn-watch-match:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(229, 9, 20, 0.5); }
 
-    /* --- DEDICATED CHANNELS DIRECTORY CARDS (/channels page) --- */
-    .channels-showcase-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 1.1rem;
-      margin-bottom: 2rem;
-    }
-    .ch-showcase-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 1.35rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      transition: all 0.28s ease;
-      animation: fadeUp 0.35s ease;
-    }
-    .ch-showcase-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--border-red);
-      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
-    }
-
-    /* --- DEDICATED LEAGUES DIRECTORY CARDS (/leagues page) --- */
-    .leagues-showcase-grid {
+    /* --- CHANNELS & LEAGUES SHOWCASE --- */
+    .channels-showcase-grid, .leagues-showcase-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 1.1rem;
       margin-bottom: 2rem;
     }
-    .lg-showcase-card {
+    .ch-showcase-card, .lg-showcase-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -814,9 +974,8 @@
       text-decoration: none;
       color: inherit;
       transition: all 0.28s ease;
-      animation: fadeUp 0.35s ease;
     }
-    .lg-showcase-card:hover {
+    .ch-showcase-card:hover, .lg-showcase-card:hover {
       transform: translateY(-5px);
       border-color: var(--border-red);
       background: var(--bg-card-hover);
@@ -828,14 +987,8 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       overflow-x: auto;
-      animation: fadeUp 0.35s ease;
     }
-    table.standings-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-size: 0.88rem;
-    }
+    table.standings-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.88rem; }
     .standings-table th {
       background: rgba(6, 8, 15, 0.85);
       color: var(--text-muted);
@@ -849,12 +1002,7 @@
       font-weight: 700;
     }
     .standings-table tr:hover { background: rgba(255, 255, 255, 0.03); }
-    .st-team-cell {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      text-align: right;
-    }
+    .st-team-cell { display: flex; align-items: center; gap: 0.6rem; text-align: right; }
     .st-team-cell img { width: 26px; height: 26px; object-fit: contain; }
     .st-pts { font-weight: 900; color: var(--gold); font-size: 0.96rem; }
 
@@ -866,28 +1014,19 @@
       border-radius: 20px;
       padding: 1.5rem;
     }
-    .seo-links-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.55rem;
-      margin-top: 1rem;
-    }
+    .seo-links-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
     .seo-link-chip {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
       color: #cbd5e1;
       text-decoration: none;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
-      padding: 0.38rem 0.8rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 10px;
       transition: all 0.2s;
     }
-    .seo-link-chip:hover {
-      border-color: var(--red);
-      color: #fff;
-      background: rgba(229, 9, 20, 0.14);
-    }
+    .seo-link-chip:hover { border-color: var(--red); color: #fff; background: rgba(229, 9, 20, 0.14); }
   </style>
 </head>
 <body>
@@ -901,16 +1040,18 @@
         </div>
         <div class="brand-text">
           <div class="brand-title">CINEMANA <span>LIVE</span></div>
-          <div class="brand-sub">سينمانا لايف • البث المباشر للمباريات 4K & FHD</div>
+          <div class="brand-sub">سينمانا لايف • مباريات 4K • أفلام • مسلسلات • أنمي</div>
         </div>
       </a>
 
       <nav class="nav-links" id="mainNavLinks">
         <a href="/" class="nav-link active" data-page="home" onclick="navigateTo('/', 'home'); return false;">🏠 الرئيسية</a>
-        <a href="/matches" class="nav-link" data-page="matches" onclick="navigateTo('/matches', 'matches'); return false;">⚽ جدول المباريات</a>
+        <a href="/matches" class="nav-link" data-page="matches" onclick="navigateTo('/matches', 'matches'); return false;">⚽ المباريات</a>
         <a href="/channels" class="nav-link" data-page="channels" onclick="navigateTo('/channels', 'channels'); return false;">📺 القنوات المباشرة</a>
+        <a href="/movies" class="nav-link" data-page="movies" onclick="navigateTo('/movies', 'movies'); return false;">🎬 الأفلام</a>
+        <a href="/series" class="nav-link" data-page="series" onclick="navigateTo('/series', 'series'); return false;">📺 المسلسلات</a>
+        <a href="/anime" class="nav-link" data-page="anime" onclick="navigateTo('/anime', 'anime'); return false;">🔥 الأنمي</a>
         <a href="/standings" class="nav-link" data-page="standings" onclick="navigateTo('/standings', 'standings'); return false;">🏆 ترتيب الدوريات</a>
-        <a href="/leagues" class="nav-link" data-page="leagues" onclick="navigateTo('/leagues', 'leagues'); return false;">🌍 البطولات</a>
       </nav>
 
       <div class="nav-actions">
@@ -929,36 +1070,71 @@
       <!-- __SEO_ARTICLE__ -->
     </div>
 
+    <!-- CINEMATIC HERO BILLBOARD (SHABAKATY / NETFLIX STYLE) -->
+    <section class="hero-billboard" id="heroBillboard" style="background-image: url('https://images.metahub.space/background/medium/tt15398776/img');">
+      <div class="hero-content">
+        <div class="hero-badges">
+          <span class="hero-tag" id="heroTag">🔥 الأكثر مشاهدة على سينمانا لايف</span>
+          <span class="hero-imdb" id="heroImdb">⭐ IMDb 8.9 • 4K Ultra HD</span>
+        </div>
+        <h2 class="hero-title" id="heroTitle">منصة سينمانا لايف — البث المباشر للمباريات وأحدث الأفلام والمسلسلات</h2>
+        <p class="hero-desc" id="heroDesc">
+          تابع أقوى مباريات الدوريات الأوروبية والعربية بث مباشر بدقة 4K Ultra HD على قنوات beIN Sports، واستمتع بمكتبة ضخمة من أحدث الأفلام والمسلسلات والأنمي المترجم على 6 سيرفرات سريعة.
+        </p>
+        <div class="hero-btns">
+          <button class="btn-hero-primary" id="heroPrimaryBtn" onclick="playChannel('bein1')">
+            ▶ تشغيل البث المباشر (beIN 1 4K)
+          </button>
+          <a href="/movies" class="btn-hero-sec" onclick="navigateTo('/movies', 'movies'); return false;">
+            🎬 تصفح مكتبة الأفلام والمسلسلات
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- 5 BEIN SPORTS CHANNELS QUICK BAR -->
     <section class="channels-dock-wrap" id="topChannelsDock">
-      <div class="dock-header">
-        <div class="dock-title">
+      <div class="sec-head" style="margin-top:0;">
+        <div class="sec-title">
           <span></span>
-          البث المباشر للقنوات الرياضية (beIN SPORTS 1 - 5 • 4K & FHD)
+          قنوات البث المباشر الرياضية (beIN SPORTS 1 - 5 • 4K & FHD)
         </div>
-        <a href="/channels" onclick="navigateTo('/channels', 'channels'); return false;" style="font-size: 0.8rem; color: #ff5b64; text-decoration:none; font-weight: 800;">
-          عرض دليل القنوات الكامل ←
+        <a href="/channels" class="sec-more" onclick="navigateTo('/channels', 'channels'); return false;">
+          دليل القنوات الكامل ←
         </a>
       </div>
       <div class="bein-grid" id="beinGrid"></div>
     </section>
 
-    <!-- BRANDED LIVE PLAYER STAGE -->
+    <!-- UNIVERSAL CINEMA STAGE (HANDLES BOTH LIVE HLS TV & 6-SERVER VOD EMBEDS) -->
     <section class="player-stage" id="playerStage">
       <div class="player-topbar">
         <div class="now-playing-info">
-          <div class="np-badge">
+          <div class="np-badge" id="npModeBadge">
             <span class="live-dot" style="background:#fff;"></span>
             بث مباشر
           </div>
           <div>
             <div class="np-title" id="npChannelName">beIN Sports 1 4K</div>
-            <div class="np-sub" id="npMatchTitle">اختر قناة أو مباراة لبدء المشاهدة المباشرة</div>
+            <div class="np-sub" id="npMatchTitle">اختر قناة أو مباراة أو فيلماً لبدء المشاهدة الفورية</div>
           </div>
         </div>
         <div class="player-top-actions">
-          <button class="btn-player-top" onclick="reloadCurrentStream()">🔄 تحديث الإشارة</button>
+          <button class="btn-player-top" id="btnReloadStream" onclick="reloadCurrentStream()">🔄 تحديث الإشارة</button>
           <button class="btn-player-top" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
+        </div>
+      </div>
+
+      <!-- VOD 6-SERVERS & SEASON/EPISODE BAR (Appears when watching a Movie / Series / Anime) -->
+      <div class="vod-servers-bar" id="vodServersBar">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+          <span style="font-size:0.8rem; font-weight:900; color:#e2e8f0;">⚡ اختر سيرفر المشاهدة (6 سيرفرات سريعة تدعم الترجمة):</span>
+          <div class="vod-srv-list" id="vodServerButtons"></div>
+        </div>
+        <div class="vod-ep-selector" id="vodEpSelector">
+          <span style="font-size:0.8rem; font-weight:800; color:var(--gold);">📺 اختيار الموسم والحلقة:</span>
+          <select class="vod-select" id="seasonSelect" onchange="onSeasonChange()"></select>
+          <select class="vod-select" id="episodeSelect" onchange="onEpisodeChange()"></select>
         </div>
       </div>
 
@@ -968,19 +1144,20 @@
         </div>
 
         <video id="liveVideo" playsinline></video>
+        <iframe id="vodIframe" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
 
         <!-- Status / Loading Overlay -->
         <div class="player-overlay" id="playerOverlay">
           <div class="spinner-ring" id="overlaySpinner" style="display:none;"></div>
-          <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الرياضي (4K & FHD)</div>
-          <div class="overlay-sub" id="overlaySub">اضغط على أي قناة من قنوات beIN Sports الخمسة بالأعلى أو اضغط "شاهد المباراة" أمام أي لقاء</div>
+          <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الذكي (4K & FHD)</div>
+          <div class="overlay-sub" id="overlaySub">اضغط على أي قناة من قنوات beIN Sports بالأعلى أو اختر أي مباراة أو فيلم أو مسلسل لبدء المشاهدة</div>
           <button class="btn-watch-match" id="overlayPlayBtn" onclick="playChannel('bein1')" style="margin-top:0.5rem; padding: 0.65rem 1.4rem; font-size:0.9rem;">
             ▶ تشغيل beIN Sports 1 4K الآن
           </button>
         </div>
 
-        <!-- Custom Branded Controls -->
-        <div class="custom-controls">
+        <!-- Custom Branded Controls (For Live TV mode) -->
+        <div class="custom-controls" id="liveCustomControls">
           <div class="ctrl-group">
             <button class="ctrl-btn" onclick="togglePlayPause()" title="تشغيل / إيقاف">
               <svg id="playPauseIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -1007,8 +1184,18 @@
       </div>
     </section>
 
-    <!-- VIEW 1: MATCHES & LEAGUES FILTER VIEW -->
+    <!-- SECTION: MATCHES & LEAGUES -->
     <div id="viewMatchesContainer">
+      <div class="sec-head">
+        <div class="sec-title">
+          <span></span>
+          جدول المباريات والنتائج المباشرة
+        </div>
+        <a href="/matches" class="sec-more" onclick="navigateTo('/matches', 'matches'); return false;">
+          عرض كل المباريات ←
+        </a>
+      </div>
+
       <nav class="leagues-bar" id="leaguesBar"></nav>
 
       <section class="toolbar" id="matchesToolbar">
@@ -1032,10 +1219,74 @@
       </section>
     </div>
 
-    <!-- VIEW 2: STANDINGS PAGE VIEW -->
+    <!-- HOME ENTERTAINMENT SHOWCASE ROWS (Movies, Series, Anime on Home Page!) -->
+    <div id="homeVodShowcase">
+      <!-- Movies Row -->
+      <div class="sec-head">
+        <div class="sec-title">
+          <span></span>
+          🎬 أحدث الأفلام العالمية المترجمة (IMDb Top Movies)
+        </div>
+        <a href="/movies" class="sec-more" onclick="navigateTo('/movies', 'movies'); return false;">
+          عرض جميع الأفلام ←
+        </a>
+      </div>
+      <div class="vod-grid" id="homeMoviesGrid"></div>
+
+      <!-- Series Row -->
+      <div class="sec-head">
+        <div class="sec-title">
+          <span></span>
+          📺 أشهر المسلسلات الأجنبية والعالمية (IMDb Top Series)
+        </div>
+        <a href="/series" class="sec-more" onclick="navigateTo('/series', 'series'); return false;">
+          عرض جميع المسلسلات ←
+        </a>
+      </div>
+      <div class="vod-grid" id="homeSeriesGrid"></div>
+
+      <!-- Anime Row -->
+      <div class="sec-head">
+        <div class="sec-title">
+          <span></span>
+          🔥 أحدث وأشهر الأنميات المترجمة (Top Anime)
+        </div>
+        <a href="/anime" class="sec-more" onclick="navigateTo('/anime', 'anime'); return false;">
+          عرض جميع الأنميات ←
+        </a>
+      </div>
+      <div class="vod-grid" id="homeAnimeGrid"></div>
+    </div>
+
+    <!-- DEDICATED VOD CATALOG PAGE VIEW (/movies, /series, /anime) -->
+    <section id="vodCatalogSection" style="display:none;">
+      <div class="sec-head" style="margin-top:0;">
+        <div class="sec-title">
+          <span></span>
+          <b id="vodCatalogTitle">مكتبة الأفلام المترجمة</b>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-group" id="vodGenrePills">
+          <button class="filter-btn active" onclick="filterVodGenre('', this)">الكل</button>
+          <button class="filter-btn" onclick="filterVodGenre('Action', this)">أكشن وإثارة</button>
+          <button class="filter-btn" onclick="filterVodGenre('Drama', this)">دراما</button>
+          <button class="filter-btn" onclick="filterVodGenre('Sci-Fi', this)">خيال علمي</button>
+          <button class="filter-btn" onclick="filterVodGenre('Thriller', this)">تشويق وغموض</button>
+          <button class="filter-btn" onclick="filterVodGenre('Comedy', this)">كوميديا</button>
+          <button class="filter-btn" onclick="filterVodGenre('Horror', this)">رعب</button>
+        </div>
+        <input type="text" class="search-box" id="vodSearchInput" placeholder="🔍 ابحث في IMDb عن فيلم أو مسلسل أو أنمي..." oninput="debouncedVodSearch()" />
+      </div>
+
+      <div class="vod-grid" id="vodCatalogGrid"></div>
+    </section>
+
+    <!-- STANDINGS PAGE VIEW -->
     <section id="standingsSection" style="display:none;">
-      <div class="page-title-bar" id="standingsHeaderBar">
-        <h2 id="standingsTitleText">جدول ترتيب البطولة</h2>
+      <div class="sec-head" id="standingsHeaderBar" style="margin-top:0;">
+        <div class="sec-title"><span></span><b id="standingsTitleText">جدول ترتيب البطولة</b></div>
       </div>
       <nav class="leagues-bar" id="standingsLeaguesBar" style="display:none;"></nav>
       <div class="standings-wrap">
@@ -1059,18 +1310,18 @@
       </div>
     </section>
 
-    <!-- VIEW 3: DEDICATED CHANNELS PAGE (/channels) -->
+    <!-- DEDICATED CHANNELS PAGE (/channels) -->
     <section id="channelsDirectorySection" style="display:none;">
-      <div class="page-title-bar">
-        <h2>دليل القنوات الرياضية المباشرة (beIN Sports 1 - 5)</h2>
+      <div class="sec-head" style="margin-top:0;">
+        <div class="sec-title"><span></span>دليل القنوات الرياضية المباشرة (beIN Sports 1 - 5)</div>
       </div>
       <div class="channels-showcase-grid" id="channelsShowcaseGrid"></div>
     </section>
 
-    <!-- VIEW 4: DEDICATED LEAGUES DIRECTORY PAGE (/leagues) -->
+    <!-- DEDICATED LEAGUES DIRECTORY PAGE (/leagues) -->
     <section id="leaguesDirectorySection" style="display:none;">
-      <div class="page-title-bar">
-        <h2>أقسام البطولات والدوريات العالمية والعربية</h2>
+      <div class="sec-head" style="margin-top:0;">
+        <div class="sec-title"><span></span>أقسام البطولات والدوريات العالمية والعربية</div>
       </div>
       <div class="leagues-showcase-grid" id="leaguesShowcaseGrid"></div>
     </section>
@@ -1078,10 +1329,10 @@
     <!-- SEO PROGRAMMATIC ARCHIVE HUB -->
     <footer class="seo-hub-box">
       <h2 style="font-size:1.08rem; font-weight:900; color:#fff; margin-bottom:0.4rem;">
-        🌐 سينمانا لايف (Cinemana Live) - البث المباشر للمباريات وجداول ترتيب الدوريات
+        🌐 سينمانا لايف (Cinemana Live) - البث المباشر للمباريات ومشاهدة الأفلام والمسلسلات والأنمي
       </h2>
       <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.7;">
-        منصة <strong>سينمانا لايف</strong> الرياضية تقدم تغطية شاملة ومباشرة لأهم مباريات اليوم والغد بجودات متعددة (4K Ultra HD و Full HD 1080p و 720p HD) مع تحديث فوري للنتائج وجداول ترتيب دوري أبطال أوروبا، الدوري الإنجليزي الممتاز، الدوري الإسباني، الدوري الإيطالي، ودوري نجوم العراق.
+        منصة <strong>سينمانا لايف</strong> تجمع بين البث المباشر لأقوى المباريات العالمية بدقة 4K Ultra HD و Full HD على قنوات beIN Sports وبين أضخم مكتبة أفلام ومسلسلات وأنمي مترجم مرتبطة بقاعدة بيانات IMDb العالمية على 6 سيرفرات مشاهدة فورية.
       </p>
       <div class="seo-links-grid" id="seoLinksHub"></div>
     </footer>
@@ -1092,6 +1343,16 @@
     let CHANNELS = [];
     let LEAGUES = [];
     let ALL_MATCHES = [];
+    let HOME_MOVIES = [];
+    let HOME_SERIES = [];
+    let HOME_ANIME = [];
+    let currentVodCategory = 'movie';
+    let currentVodDetail = null;
+    let currentVodServerIdx = 0;
+    let currentVodSeason = 1;
+    let currentVodEpisode = 1;
+    let vodSearchTimer = null;
+
     let currentPage = 'home';
     let currentLeague = 'all';
     let currentDateOffset = 0;
@@ -1113,6 +1374,9 @@
         renderChannelsDirectory();
         renderLeaguesDirectory();
 
+        // Load home VOD rows in parallel with matches
+        loadHomeVodRows();
+
         const boot = window.__BOOT_STATE__ || {};
         await applyBootState(boot);
 
@@ -1126,11 +1390,93 @@
       }
     }
 
+    async function loadHomeVodRows() {
+      try {
+        const [mRes, sRes, aRes] = await Promise.all([
+          fetch('/api/vod/catalog?category=movie').then(r => r.json()),
+          fetch('/api/vod/catalog?category=series').then(r => r.json()),
+          fetch('/api/vod/catalog?category=anime').then(r => r.json())
+        ]);
+        HOME_MOVIES = mRes.items || [];
+        HOME_SERIES = sRes.items || [];
+        HOME_ANIME = aRes.items || [];
+
+        renderVodGrid('homeMoviesGrid', HOME_MOVIES.slice(0, 12));
+        renderVodGrid('homeSeriesGrid', HOME_SERIES.slice(0, 12));
+        renderVodGrid('homeAnimeGrid', HOME_ANIME.slice(0, 12));
+        renderSeoLinksHub();
+
+        // Feature top movie in Hero Billboard if on home
+        if (HOME_MOVIES.length > 0 && currentPage === 'home') {
+          updateHeroBillboard(HOME_MOVIES[0]);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function updateHeroBillboard(item) {
+      if (!item) return;
+      const hero = document.getElementById('heroBillboard');
+      if (item.backdrop) {
+        hero.style.backgroundImage = `url('${item.backdrop}')`;
+      }
+      document.getElementById('heroImdb').textContent = `⭐ IMDb ${item.rating} • ${item.year} • 4K FHD`;
+      document.getElementById('heroTitle').textContent = `مشاهدة ${item.title} (${item.year}) مترجم + بث مباريات اليوم 4K`;
+      document.getElementById('heroDesc').textContent = item.description;
+      const btn = document.getElementById('heroPrimaryBtn');
+      btn.textContent = `▶ مشاهدة ${item.title} الآن`;
+      btn.onclick = () => openVodWatch(item.media_type, item.imdb_id, item.slug);
+    }
+
+    function renderVodGrid(containerId, items) {
+      const grid = document.getElementById(containerId);
+      if (!grid) return;
+      if (!items || !items.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--text-muted);">جاري تحميل المكتبة...</div>`;
+        return;
+      }
+      grid.innerHTML = items.map((it, idx) => {
+        const typeLabel = it.category === 'anime' ? 'أنمي' : (it.media_type === 'series' ? 'مسلسل' : 'فيلم');
+        return `
+          <a href="${it.url}" class="vod-card" style="animation-delay:${Math.min(idx * 0.02, 0.35)}s" onclick="openVodWatch('${it.media_type}', '${it.imdb_id}', '${it.slug}'); return false;">
+            <div class="vod-poster-wrap">
+              <img src="${it.poster}" loading="lazy" onerror="this.src='${FALLBACK_LOGO}'" alt="${it.title}" />
+              <div class="vod-rating-badge">⭐ ${it.rating}</div>
+              <div class="vod-qual-badge">${typeLabel} FHD</div>
+              <div class="vod-hover-play">
+                <div class="play-circle">
+                  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="vod-body">
+              <div class="vod-title" title="${it.title}">${it.title}</div>
+              <div class="vod-sub">
+                <span>${it.year || '2026'}</span>
+                <span>${(it.genres && it.genres[0]) || 'مترجم'}</span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
     async function applyBootState(boot) {
       const page = boot.page || 'home';
       setActiveNav(page);
 
-      if (page === 'channels') {
+      if (page === 'movies') {
+        await openVodCategoryPage('movie', false);
+      } else if (page === 'series') {
+        await openVodCategoryPage('series', false);
+      } else if (page === 'anime') {
+        await openVodCategoryPage('anime', false);
+      } else if (page === 'watch_vod' && boot.vod_item) {
+        showView('home');
+        loadMatches();
+        startVodPlayback(boot.vod_item);
+      } else if (page === 'channels') {
         showView('channels');
         await loadMatches();
       } else if (page === 'leagues') {
@@ -1139,13 +1485,14 @@
       } else if (page === 'standings') {
         currentLeague = boot.initial_league || '7';
         showView('standings_full');
+        renderStandingsLeaguePills();
         await loadStandings(currentLeague);
         await loadMatches();
       } else if (page === 'league_detail' && boot.initial_league) {
         showView('matches');
         await selectLeague(boot.initial_league, false);
       } else {
-        showView('matches');
+        showView('home');
         await loadMatches();
       }
 
@@ -1160,29 +1507,25 @@
       setActiveNav(pageType);
 
       if (pageType === 'home') {
-        showView('matches');
-        document.getElementById('playerStage').style.display = 'block';
-        document.getElementById('topChannelsDock').style.display = 'block';
+        showView('home');
         await selectLeague('all', false);
       } else if (pageType === 'matches') {
-        showView('matches');
-        document.getElementById('playerStage').style.display = 'block';
-        document.getElementById('topChannelsDock').style.display = 'none';
+        showView('matches_only');
         await selectLeague('all', false);
       } else if (pageType === 'channels') {
-        document.getElementById('playerStage').style.display = 'block';
-        document.getElementById('topChannelsDock').style.display = 'none';
         showView('channels');
+      } else if (pageType === 'movies') {
+        await openVodCategoryPage('movie', false);
+      } else if (pageType === 'series') {
+        await openVodCategoryPage('series', false);
+      } else if (pageType === 'anime') {
+        await openVodCategoryPage('anime', false);
       } else if (pageType === 'standings') {
-        document.getElementById('playerStage').style.display = 'none';
-        document.getElementById('topChannelsDock').style.display = 'none';
         if (currentLeague === 'all') currentLeague = '7';
         showView('standings_full');
         renderStandingsLeaguePills();
         await loadStandings(currentLeague);
       } else if (pageType === 'leagues') {
-        document.getElementById('playerStage').style.display = 'none';
-        document.getElementById('topChannelsDock').style.display = 'none';
         showView('leagues');
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1191,6 +1534,9 @@
     function handleUrlChange(pathname) {
       if (pathname === '/matches') navigateTo('/matches', 'matches');
       else if (pathname === '/channels') navigateTo('/channels', 'channels');
+      else if (pathname === '/movies') navigateTo('/movies', 'movies');
+      else if (pathname === '/series') navigateTo('/series', 'series');
+      else if (pathname === '/anime') navigateTo('/anime', 'anime');
       else if (pathname === '/standings') navigateTo('/standings', 'standings');
       else if (pathname === '/leagues') navigateTo('/leagues', 'leagues');
       else navigateTo('/', 'home');
@@ -1200,12 +1546,18 @@
       currentPage = pageType;
       document.querySelectorAll('#mainNavLinks .nav-link').forEach(a => {
         const dp = a.getAttribute('data-page');
-        a.classList.toggle('active', dp === pageType || (pageType === 'league_detail' && dp === 'leagues'));
+        a.classList.toggle('active', dp === pageType);
       });
     }
 
     function showView(mode) {
-      document.getElementById('viewMatchesContainer').style.display = (mode === 'matches') ? 'block' : 'none';
+      const isHome = (mode === 'home');
+      document.getElementById('heroBillboard').style.display = isHome ? 'flex' : 'none';
+      document.getElementById('topChannelsDock').style.display = (isHome || mode === 'matches') ? 'block' : 'none';
+      document.getElementById('playerStage').style.display = (isHome || mode === 'matches' || mode === 'matches_only' || mode === 'channels' || mode === 'vod_catalog') ? 'block' : 'none';
+      document.getElementById('viewMatchesContainer').style.display = (isHome || mode === 'matches' || mode === 'matches_only') ? 'block' : 'none';
+      document.getElementById('homeVodShowcase').style.display = isHome ? 'block' : 'none';
+      document.getElementById('vodCatalogSection').style.display = (mode === 'vod_catalog') ? 'block' : 'none';
       document.getElementById('standingsSection').style.display = (mode === 'standings_full' || mode === 'standings_sub') ? 'block' : 'none';
       document.getElementById('standingsLeaguesBar').style.display = (mode === 'standings_full') ? 'flex' : 'none';
       document.getElementById('standingsHeaderBar').style.display = (mode === 'standings_full') ? 'flex' : 'none';
@@ -1213,6 +1565,176 @@
       document.getElementById('leaguesDirectorySection').style.display = (mode === 'leagues') ? 'block' : 'none';
     }
 
+    /* --- VOD CATALOG & 6-SERVER PLAYER FUNCTIONS --- */
+    async function openVodCategoryPage(cat, push = true) {
+      currentVodCategory = cat;
+      showView('vod_catalog');
+      const titles = {
+        movie: '🎬 مكتبة الأفلام العالمية المترجمة (IMDb Movies)',
+        series: '📺 مكتبة المسلسلات الأجنبية والعالمية (IMDb Series)',
+        anime: '🔥 مكتبة الأنمي الياباني المترجم (Top Anime)'
+      };
+      document.getElementById('vodCatalogTitle').textContent = titles[cat] || titles.movie;
+      document.getElementById('vodGenrePills').style.display = (cat === 'anime') ? 'none' : 'flex';
+      document.getElementById('vodSearchInput').value = '';
+      renderVodGrid('vodCatalogGrid', []);
+
+      const res = await fetch(`/api/vod/catalog?category=${cat}`);
+      const data = await res.json();
+      renderVodGrid('vodCatalogGrid', data.items || []);
+    }
+
+    async function filterVodGenre(genre, btn) {
+      document.querySelectorAll('#vodGenrePills .filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderVodGrid('vodCatalogGrid', []);
+      const res = await fetch(`/api/vod/catalog?category=${currentVodCategory}&genre=${encodeURIComponent(genre)}`);
+      const data = await res.json();
+      renderVodGrid('vodCatalogGrid', data.items || []);
+    }
+
+    function debouncedVodSearch() {
+      clearTimeout(vodSearchTimer);
+      vodSearchTimer = setTimeout(async () => {
+        const q = document.getElementById('vodSearchInput').value.trim();
+        const res = await fetch(`/api/vod/catalog?category=${currentVodCategory}&q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        renderVodGrid('vodCatalogGrid', data.items || []);
+      }, 380);
+    }
+
+    async function openVodWatch(mediaType, imdbId, slug = '') {
+      const targetUrl = `/watch/${mediaType}/${imdbId}/${slug}`;
+      window.history.pushState({}, '', targetUrl);
+
+      document.getElementById('playerStage').style.display = 'block';
+      document.getElementById('playerStage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const overlay = document.getElementById('playerOverlay');
+      overlay.classList.remove('hidden');
+      document.getElementById('overlaySpinner').style.display = 'block';
+      document.getElementById('overlayPlayBtn').style.display = 'none';
+      document.getElementById('overlayTitle').textContent = 'جاري جلب بيانات العرض وسيرفرات المشاهدة...';
+
+      try {
+        const res = await fetch(`/api/vod/meta/${mediaType}/${imdbId}`);
+        const item = await res.json();
+        startVodPlayback(item);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function startVodPlayback(item) {
+      currentVodDetail = item;
+      currentVodServerIdx = 0;
+      currentVodSeason = 1;
+      currentVodEpisode = 1;
+
+      // Stop live HLS if running
+      const video = document.getElementById('liveVideo');
+      video.pause();
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      video.style.display = 'none';
+      document.getElementById('liveCustomControls').style.display = 'none';
+
+      const iframe = document.getElementById('vodIframe');
+      iframe.style.display = 'block';
+      document.getElementById('playerOverlay').classList.add('hidden');
+
+      document.getElementById('npModeBadge').innerHTML = `🎬 سينمانا VOD • ⭐ ${item.rating}`;
+      document.getElementById('npChannelName').textContent = `${item.title} (${item.year})`;
+      document.getElementById('npMatchTitle').textContent = item.description;
+
+      const srvBar = document.getElementById('vodServersBar');
+      srvBar.style.display = 'flex';
+
+      const epBox = document.getElementById('vodEpSelector');
+      if (item.media_type === 'series' && item.seasons && item.seasons.length) {
+        epBox.style.display = 'flex';
+        const sSel = document.getElementById('seasonSelect');
+        sSel.innerHTML = item.seasons.map(s => `<option value="${s.season}">الموسم ${s.season}</option>`).join('');
+        populateEpisodesDropdown(1);
+      } else {
+        epBox.style.display = 'none';
+      }
+
+      renderVodServerButtons();
+      loadCurrentVodIframe();
+    }
+
+    function populateEpisodesDropdown(seasonNum) {
+      const sObj = (currentVodDetail.seasons || []).find(s => Number(s.season) === Number(seasonNum)) || { episodes: 12 };
+      const epCount = Math.max(1, Number(sObj.episodes || 12));
+      const eSel = document.getElementById('episodeSelect');
+      let html = '';
+      for (let e = 1; e <= epCount; e++) {
+        html += `<option value="${e}">الحلقة ${e}</option>`;
+      }
+      eSel.innerHTML = html;
+    }
+
+    function onSeasonChange() {
+      currentVodSeason = parseInt(document.getElementById('seasonSelect').value, 10) || 1;
+      currentVodEpisode = 1;
+      populateEpisodesDropdown(currentVodSeason);
+      loadCurrentVodIframe();
+    }
+
+    function onEpisodeChange() {
+      currentVodEpisode = parseInt(document.getElementById('episodeSelect').value, 10) || 1;
+      loadCurrentVodIframe();
+    }
+
+    function buildClientVodServers(imdbId, mediaType, s, e) {
+      if (mediaType === 'movie') {
+        return [
+          { name: 'سيرفر 1 (VidAPI HD)',  url: `https://vidapi.ru/embed/movie/${imdbId}` },
+          { name: 'سيرفر 2 (VidSrc Pro)', url: `https://vidsrc.xyz/embed/movie?imdb=${imdbId}` },
+          { name: 'سيرفر 3 (MultiEmbed)', url: `https://multiembed.mov/?video_id=${imdbId}` },
+          { name: 'سيرفر 4 (2Embed FHD)', url: `https://www.2embed.cc/embed/${imdbId}` },
+          { name: 'سيرفر 5 (AutoEmbed)',  url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
+          { name: 'سيرفر 6 (VidSrc Me)',  url: `https://vidsrc.me/embed/movie?imdb=${imdbId}` }
+        ];
+      }
+      return [
+        { name: 'سيرفر 1 (VidAPI HD)',  url: `https://vidapi.ru/embed/tv/${imdbId}/${s}/${e}` },
+        { name: 'سيرفر 2 (VidSrc Pro)', url: `https://vidsrc.xyz/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` },
+        { name: 'سيرفر 3 (MultiEmbed)', url: `https://multiembed.mov/?video_id=${imdbId}&s=${s}&e=${e}` },
+        { name: 'سيرفر 4 (2Embed FHD)', url: `https://www.2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
+        { name: 'سيرفر 5 (AutoEmbed)',  url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
+        { name: 'سيرفر 6 (VidSrc Me)',  url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` }
+      ];
+    }
+
+    function renderVodServerButtons() {
+      if (!currentVodDetail) return;
+      const srvs = buildClientVodServers(currentVodDetail.imdb_id, currentVodDetail.media_type, currentVodSeason, currentVodEpisode);
+      const wrap = document.getElementById('vodServerButtons');
+      wrap.innerHTML = srvs.map((srv, idx) => `
+        <button class="vod-srv-btn ${idx === currentVodServerIdx ? 'active' : ''}" onclick="selectVodServer(${idx})">
+          🖥️ ${srv.name}
+        </button>
+      `).join('');
+    }
+
+    function selectVodServer(idx) {
+      currentVodServerIdx = idx;
+      renderVodServerButtons();
+      loadCurrentVodIframe();
+    }
+
+    function loadCurrentVodIframe() {
+      if (!currentVodDetail) return;
+      const srvs = buildClientVodServers(currentVodDetail.imdb_id, currentVodDetail.media_type, currentVodSeason, currentVodEpisode);
+      const chosen = srvs[currentVodServerIdx] || srvs[0];
+      document.getElementById('vodIframe').src = chosen.url;
+    }
+
+    /* --- LIVE CHANNELS & MATCHES FUNCTIONS --- */
     function renderBeinDock() {
       const grid = document.getElementById('beinGrid');
       grid.innerHTML = CHANNELS.map(ch => `
@@ -1277,9 +1799,7 @@
               <span style="font-size:0.76rem; color:var(--text-muted); font-weight:700;">${lg.country} • مباريات وجدول الترتيب</span>
             </div>
           </div>
-          <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.65;">
-            ${lg.seo_desc}
-          </p>
+          <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.65;">${lg.seo_desc}</p>
           <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:0.75rem; font-size:0.8rem; color:#ff5b64; font-weight:800;">
             <span>عرض المباريات والترتيب</span>
             <span>←</span>
@@ -1290,8 +1810,6 @@
 
     async function openLeagueFromDirectory(leagueId, slug) {
       window.history.pushState({}, '', `/league/${leagueId}/${slug}`);
-      document.getElementById('playerStage').style.display = 'block';
-      document.getElementById('topChannelsDock').style.display = 'block';
       showView('matches');
       await selectLeague(leagueId, false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1427,6 +1945,10 @@
         return true;
       });
 
+      if (currentPage === 'home' && currentLeague === 'all' && !q && !liveOnlyFilter) {
+        list = list.slice(0, 9);
+      }
+
       if (!list.length) {
         grid.innerHTML = `
           <div style="grid-column: 1/-1; text-align:center; padding: 3rem; color: var(--text-muted); background: var(--bg-card); border-radius: 18px; border: 1px solid var(--border);">
@@ -1506,8 +2028,10 @@
         `<a href="/" class="seo-link-chip">سينمانا لايف الرئيسية</a>`,
         `<a href="/matches" class="seo-link-chip">جدول مباريات اليوم</a>`,
         `<a href="/channels" class="seo-link-chip">القنوات الرياضية المباشرة</a>`,
-        `<a href="/standings" class="seo-link-chip">جداول ترتيب الدوريات</a>`,
-        `<a href="/leagues" class="seo-link-chip">البطولات العالمية</a>`
+        `<a href="/movies" class="seo-link-chip">مشاهدة أفلام مترجمة</a>`,
+        `<a href="/series" class="seo-link-chip">مسلسلات أجنبية مترجمة</a>`,
+        `<a href="/anime" class="seo-link-chip">أنمي مترجم FHD</a>`,
+        `<a href="/standings" class="seo-link-chip">جداول ترتيب الدوريات</a>`
       ];
       const channelLinks = CHANNELS.map(c =>
         `<a href="/channel/${c.id}" class="seo-link-chip">بث مباشر ${c.name} (${c.quality})</a>`
@@ -1515,10 +2039,13 @@
       const leagueLinks = LEAGUES.map(l =>
         `<a href="/league/${l.id}/${l.slug || ''}" class="seo-link-chip">ترتيب ومباريات ${l.name}</a>`
       );
-      const matchLinks = ALL_MATCHES.slice(0, 24).map(m =>
-        `<a href="${m.url || '/match/' + m.id}" class="seo-link-chip">مشاهدة مباراة ${m.home_name} و ${m.away_name} بث مباشر</a>`
+      const matchLinks = ALL_MATCHES.slice(0, 14).map(m =>
+        `<a href="${m.url || '/match/' + m.id}" class="seo-link-chip">مشاهدة مباراة ${m.home_name} و ${m.away_name}</a>`
       );
-      hub.innerHTML = [...pageLinks, ...channelLinks, ...leagueLinks, ...matchLinks].join('');
+      const vodLinks = [...HOME_MOVIES.slice(0, 10), ...HOME_SERIES.slice(0, 8), ...HOME_ANIME.slice(0, 6)].map(v =>
+        `<a href="${v.url}" class="seo-link-chip">مشاهدة ${v.title} (${v.year}) مترجم</a>`
+      );
+      hub.innerHTML = [...pageLinks, ...channelLinks, ...leagueLinks, ...matchLinks, ...vodLinks].join('');
     }
 
     async function loadStandings(compId) {
@@ -1556,13 +2083,25 @@
       }
     }
 
-    /* --- CUSTOM HLS VIDEO PLAYER ENGINE --- */
+    /* --- CUSTOM HLS VIDEO PLAYER ENGINE (FOR LIVE SPORTS CHANNELS) --- */
     async function playChannel(channelId, matchTitle = '', scroll = true) {
       currentChannelId = channelId;
+      currentVodDetail = null;
       renderBeinDock();
+
+      // Switch stage from VOD iframe back to Live HLS Video
+      const iframe = document.getElementById('vodIframe');
+      iframe.src = 'about:blank';
+      iframe.style.display = 'none';
+      document.getElementById('vodServersBar').style.display = 'none';
+
+      const video = document.getElementById('liveVideo');
+      video.style.display = 'block';
+      document.getElementById('liveCustomControls').style.display = 'flex';
       document.getElementById('playerStage').style.display = 'block';
 
       const ch = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
+      document.getElementById('npModeBadge').innerHTML = `<span class="live-dot" style="background:#fff;"></span> بث مباشر`;
       document.getElementById('npChannelName').textContent = ch ? ch.name : channelId;
       document.getElementById('npMatchTitle').textContent = matchTitle || `بث حي ومباشر • ${ch ? ch.quality : ''} • ${ch ? ch.commentator : ''}`;
       document.getElementById('playerQualBadge').textContent = `مباشر • ${ch ? ch.quality : 'FHD'}`;
@@ -1641,7 +2180,11 @@
     }
 
     function reloadCurrentStream() {
-      playChannel(currentChannelId);
+      if (currentVodDetail) {
+        loadCurrentVodIframe();
+      } else {
+        playChannel(currentChannelId);
+      }
     }
 
     function togglePlayPause() {
