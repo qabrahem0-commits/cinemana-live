@@ -550,6 +550,16 @@ def make_en_slug(text, fallback_id=""):
 
 
 SLUG_TO_ID_CACHE = {}
+SITEMAP_5000_URLS = []
+
+try:
+    _sitemap_db_file = BASE_DIR / "seo_sitemap_5000.json"
+    if _sitemap_db_file.exists():
+        _sdata = json.loads(_sitemap_db_file.read_text(encoding="utf-8"))
+        SLUG_TO_ID_CACHE.update(_sdata.get("slug_map", {}))
+        SITEMAP_5000_URLS = _sdata.get("urls", [])
+except Exception:
+    pass
 
 
 def register_slug(slug, tmdb_id, media_type):
@@ -1540,6 +1550,9 @@ def sitemap_xml():
         except Exception:
             pass
 
+    for entry in SITEMAP_5000_URLS:
+        raw_urls.append((f"{base_url}{entry['loc']}", entry.get("prio", "0.80"), entry.get("freq", "weekly")))
+
     # Strictly deduplicate URLs while preserving order so Google Search Console never flags duplicate <loc> entries
     deduped_urls = []
     seen_locs = set()
@@ -1547,6 +1560,8 @@ def sitemap_xml():
         if u not in seen_locs:
             seen_locs.add(u)
             deduped_urls.append((u, prio, freq))
+        if len(deduped_urls) >= 5250:
+            break
 
     xml_items = "\n".join([
         f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{now_iso}</lastmod>\n    <changefreq>{freq}</changefreq>\n    <priority>{prio}</priority>\n  </url>"
