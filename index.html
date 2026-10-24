@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CINEMANA LIVE | سينمانا لايف - بث مباشر للمباريات</title>
+  <!-- __SEO_HEAD__ -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -46,7 +46,6 @@
       overflow-x: hidden;
     }
 
-    /* Animated Scrollbar */
     ::-webkit-scrollbar { width: 7px; height: 7px; }
     ::-webkit-scrollbar-track { background: var(--bg-deep); }
     ::-webkit-scrollbar-thumb { background: #263147; border-radius: 99px; }
@@ -179,6 +178,8 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     .dock-title {
       font-size: 1.05rem;
@@ -219,6 +220,8 @@
       gap: 0.75rem;
       transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
       overflow: hidden;
+      text-decoration: none;
+      color: inherit;
     }
     .bein-card::before {
       content: "";
@@ -275,6 +278,17 @@
       font-size: 0.73rem;
       color: var(--text-muted);
       font-weight: 700;
+    }
+    .q-pill {
+      display: inline-block;
+      padding: 0.08rem 0.42rem;
+      border-radius: 6px;
+      font-size: 0.66rem;
+      font-weight: 900;
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      margin-left: 4px;
     }
     .bein-status {
       position: relative;
@@ -383,7 +397,6 @@
       display: block;
     }
 
-    /* Watermark inside video */
     .player-watermark {
       position: absolute;
       top: 18px;
@@ -406,7 +419,6 @@
     }
     .player-watermark b { color: var(--red); }
 
-    /* Loading / Idle Overlay */
     .player-overlay {
       position: absolute;
       inset: 0;
@@ -444,7 +456,6 @@
       max-width: 440px;
     }
 
-    /* Custom Branded Controls Bar */
     .custom-controls {
       position: absolute;
       bottom: 0;
@@ -524,6 +535,7 @@
       align-items: center;
       gap: 0.5rem;
       transition: all 0.25s ease;
+      text-decoration: none;
     }
     .league-pill:hover {
       color: #fff;
@@ -537,7 +549,7 @@
       box-shadow: 0 8px 22px var(--red-glow);
     }
 
-    /* --- TOOLBAR: DATE FILTERS & SUB-VIEW TABS --- */
+    /* --- TOOLBAR --- */
     .toolbar {
       display: flex;
       align-items: center;
@@ -749,6 +761,7 @@
       gap: 0.4rem;
       box-shadow: 0 6px 18px rgba(229, 9, 20, 0.3);
       transition: all 0.22s ease;
+      text-decoration: none;
     }
     .btn-watch-match:hover {
       transform: scale(1.05);
@@ -793,6 +806,37 @@
       font-weight: 900;
       color: var(--gold);
       font-size: 0.96rem;
+    }
+
+    /* --- SEO INTERNAL LINKS HUB --- */
+    .seo-hub-box {
+      margin-top: 2.8rem;
+      background: rgba(13, 18, 31, 0.82);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+    }
+    .seo-links-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-top: 1rem;
+    }
+    .seo-link-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.38rem 0.8rem;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .seo-link-chip:hover {
+      border-color: var(--red);
+      color: #fff;
+      background: rgba(229, 9, 20, 0.14);
     }
 
     /* --- ADMIN MODAL --- */
@@ -850,20 +894,20 @@
   <!-- NAVBAR -->
   <header class="navbar">
     <div class="nav-container">
-      <a href="#" class="brand" onclick="selectLeague('all'); return false;">
+      <a href="/" class="brand" onclick="selectLeague('all'); return false;">
         <div class="brand-icon">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </div>
         <div class="brand-text">
           <div class="brand-title">CINEMANA <span>LIVE</span></div>
-          <div class="brand-sub">سينمانا لايف • البث المباشر للمباريات</div>
+          <div class="brand-sub">سينمانا لايف • البث المباشر للمباريات 4K & FHD</div>
         </div>
       </a>
 
       <div class="nav-actions">
         <div class="live-pill">
           <span class="live-dot"></span>
-          <span id="liveCountBadge">بث مباشر FHD</span>
+          <span id="liveCountBadge">5 قنوات بث مباشر</span>
         </div>
         <button class="btn-settings" onclick="openAdminModal()">
           ⚙️ إعدادات الـ Restream
@@ -874,15 +918,18 @@
 
   <main class="container">
 
+    <!-- SSR SEO DYNAMIC ARTICLE BLOCK -->
+    <!-- __SEO_ARTICLE__ -->
+
     <!-- 5 BEIN SPORTS CHANNELS HERO BAR -->
     <section class="channels-dock-wrap">
       <div class="dock-header">
         <div class="dock-title">
           <span></span>
-          قنوات البث المباشر (beIN SPORTS 1 - 5 FHD)
+          قنوات البث المباشر الحصرية (2 قنوات 4K • 2 قنوات Full HD • قناة 720p HD)
         </div>
         <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">
-          اضغط على أي قناة للتشغيل الفوري
+          كل قناة مربوطة بحساب IPTV مستقل بدون تقطيع
         </div>
       </div>
       <div class="bein-grid" id="beinGrid"></div>
@@ -897,7 +944,7 @@
             LIVE RESTREAM
           </div>
           <div>
-            <div class="np-title" id="npChannelName">beIN Sports HD 1</div>
+            <div class="np-title" id="npChannelName">beIN Sports 1 4K</div>
             <div class="np-sub" id="npMatchTitle">اختر قناة أو مباراة لبدء البث المباشر</div>
           </div>
         </div>
@@ -917,10 +964,10 @@
         <!-- Status / Loading Overlay -->
         <div class="player-overlay" id="playerOverlay">
           <div class="spinner-ring" id="overlaySpinner" style="display:none;"></div>
-          <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الذكي</div>
+          <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الذكي (4K & FHD)</div>
           <div class="overlay-sub" id="overlaySub">اضغط على أي قناة من قنوات beIN Sports الخمسة بالأعلى أو اضغط "شاهد البث" أمام أي مباراة</div>
           <button class="btn-watch-match" id="overlayPlayBtn" onclick="playChannel('bein1')" style="margin-top:0.5rem; padding: 0.65rem 1.4rem; font-size:0.9rem;">
-            ▶ تشغيل beIN Sports HD 1 الآن
+            ▶ تشغيل beIN Sports 1 4K الآن
           </button>
         </div>
 
@@ -936,7 +983,7 @@
             <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(this.value)" />
             <div class="live-indicator-bar">
               <span class="live-dot"></span>
-              <span>مباشر • 1080p FHD</span>
+              <span id="playerQualBadge">مباشر • 4K Ultra HD</span>
             </div>
           </div>
 
@@ -999,18 +1046,29 @@
       </div>
     </section>
 
+    <!-- SEO PROGRAMMATIC ARCHIVE HUB (Helps Google crawl all matches, leagues & channels) -->
+    <footer class="seo-hub-box">
+      <h2 style="font-size:1.1rem; font-weight:900; color:#fff; margin-bottom:0.4rem;">
+        🌐 دليل سينمانا لايف (Cinemana Live) للبث المباشر للمباريات والدوريات العالمية
+      </h2>
+      <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.7;">
+        موقع <strong>سينمانا لايف</strong> يوفر خدمة البث المباشر لمباريات اليوم والغد بدون تقطيع عبر 5 قنوات beIN Sports مخصصة (قناتين بدقة 4K Ultra HD، قناتين بدقة 1080p Full HD، وقناة بدقة 720p HD لتوفير البيانات)، مع تحديث لحظي لنتائج المباريات وجداول ترتيب الدوريات الأوروبية والعربية.
+      </p>
+      <div class="seo-links-grid" id="seoLinksHub"></div>
+    </footer>
+
   </main>
 
   <!-- ADMIN RESTREAM MODAL -->
   <div class="modal-backdrop" id="adminModal">
     <div class="modal-card">
       <div class="modal-head">
-        <h3 style="font-weight:900;">⚙️ إعدادات قنوات beIN الخمسة & الـ Restream</h3>
+        <h3 style="font-weight:900;">⚙️ إعدادات الـ 5 حسابات & الـ Restream</h3>
         <button class="btn-player-top" onclick="closeAdminModal()">✕ إغلاق</button>
       </div>
       <div class="form-row">
-        <label>عدد الاتصالات المسموحة بنفس اللحظة من اللوحة (Max Connections):</label>
-        <input type="number" id="admMaxConn" min="1" max="10" value="1" />
+        <label>عدد القنوات المسموح تشغيلها بنفس اللحظة (5 حسابات مستقلة = 5 قنوات):</label>
+        <input type="number" id="admMaxConn" min="1" max="10" value="5" />
       </div>
       <div id="admChannelsList"></div>
       <button class="btn-watch-match" style="width:100%; justify-content:center; padding:0.75rem; margin-top:0.8rem;" onclick="saveAdminConfig()">
@@ -1040,7 +1098,17 @@
         LEAGUES = data.leagues || [];
         renderBeinDock();
         renderLeaguesBar();
-        await loadMatches();
+
+        const boot = window.__BOOT_STATE__ || {};
+        if (boot.initial_league) {
+          await selectLeague(boot.initial_league);
+        } else {
+          await loadMatches();
+        }
+        if (boot.auto_channel) {
+          playChannel(boot.auto_channel, boot.match_title || '');
+        }
+
         setInterval(loadMatches, 30000);
       } catch (e) {
         console.error(e);
@@ -1050,12 +1118,12 @@
     function renderBeinDock() {
       const grid = document.getElementById('beinGrid');
       grid.innerHTML = CHANNELS.map(ch => `
-        <div class="bein-card ${ch.id === currentChannelId ? 'active' : ''}" id="card_${ch.id}" onclick="playChannel('${ch.id}')">
+        <a href="/channel/${ch.id}" class="bein-card ${ch.id === currentChannelId ? 'active' : ''}" id="card_${ch.id}" onclick="playChannel('${ch.id}'); return false;">
           <div class="bein-left">
             <div class="bein-num-badge">${ch.num || ch.id.replace('bein','')}</div>
             <div class="bein-info">
               <div class="bein-name">${ch.name}</div>
-              <div class="bein-meta">${ch.quality} • ${ch.commentator || 'بث مباشر'}</div>
+              <div class="bein-meta"><span class="q-pill">${ch.quality}</span> ${ch.commentator || 'بث مباشر'}</div>
             </div>
           </div>
           <div class="bein-status">
@@ -1063,23 +1131,23 @@
             <div class="eq-bar"></div>
             <div class="eq-bar"></div>
           </div>
-        </div>
+        </a>
       `).join('');
     }
 
     function renderLeaguesBar() {
       const bar = document.getElementById('leaguesBar');
       let html = `
-        <button class="league-pill ${currentLeague === 'all' ? 'active' : ''}" onclick="selectLeague('all')">
+        <a href="/" class="league-pill ${currentLeague === 'all' ? 'active' : ''}" onclick="selectLeague('all'); return false;">
           🔥 كل المباريات
-        </button>
+        </a>
       `;
       for (const lg of LEAGUES) {
         html += `
-          <button class="league-pill ${String(currentLeague) === String(lg.id) ? 'active' : ''}" onclick="selectLeague('${lg.id}')">
+          <a href="/league/${lg.id}/${lg.slug || ''}" class="league-pill ${String(currentLeague) === String(lg.id) ? 'active' : ''}" onclick="selectLeague('${lg.id}'); return false;">
             <span>${lg.badge}</span>
             <span>${lg.short}</span>
-          </button>
+          </a>
         `;
       }
       bar.innerHTML = html;
@@ -1145,8 +1213,9 @@
         const data = await res.json();
         ALL_MATCHES = data.matches || [];
         const liveCount = data.live_count || 0;
-        document.getElementById('liveCountBadge').textContent = liveCount > 0 ? `${liveCount} مباريات جارية الآن` : 'بث مباشر 1080p FHD';
+        document.getElementById('liveCountBadge').textContent = liveCount > 0 ? `${liveCount} مباريات جارية الآن` : '5 قنوات بث مباشر (4K & FHD)';
         renderMatches();
+        renderSeoLinksHub();
       } catch (e) {
         console.error(e);
       }
@@ -1185,6 +1254,7 @@
           : (m.is_ended ? `انتهت • ${m.status_text}` : (m.start_date || 'اليوم'));
 
         const safeMatchTitle = `${m.home_name} ضد ${m.away_name}`.replace(/'/g, "");
+        const matchUrl = m.url || `/match/${m.id}`;
 
         return `
           <article class="match-card ${m.is_live ? 'is-live' : ''}" style="animation-delay: ${Math.min(idx * 0.03, 0.4)}s">
@@ -1221,13 +1291,28 @@
                 <span>📺 القناة: <b>${m.channel_name}</b></span>
                 <span>🎙️ المعلق: <b>${m.commentator}</b></span>
               </div>
-              <button class="btn-watch-match" onclick="playChannel('${m.channel_id}', '${safeMatchTitle}')">
+              <a href="${matchUrl}" class="btn-watch-match" onclick="playChannel('${m.channel_id}', '${safeMatchTitle}'); return false;">
                 ▶ شاهد البث
-              </button>
+              </a>
             </div>
           </article>
         `;
       }).join('');
+    }
+
+    function renderSeoLinksHub() {
+      const hub = document.getElementById('seoLinksHub');
+      if (!hub) return;
+      const channelLinks = CHANNELS.map(c =>
+        `<a href="/channel/${c.id}" class="seo-link-chip">بث مباشر ${c.name} (${c.quality})</a>`
+      );
+      const leagueLinks = LEAGUES.map(l =>
+        `<a href="/league/${l.id}/${l.slug || ''}" class="seo-link-chip">ترتيب ومباريات ${l.name}</a>`
+      );
+      const matchLinks = ALL_MATCHES.slice(0, 24).map(m =>
+        `<a href="${m.url || '/match/' + m.id}" class="seo-link-chip">مشاهدة مباراة ${m.home_name} و ${m.away_name} بث مباشر</a>`
+      );
+      hub.innerHTML = [...channelLinks, ...leagueLinks, ...matchLinks].join('');
     }
 
     async function loadStandings(compId) {
@@ -1272,7 +1357,8 @@
 
       const ch = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
       document.getElementById('npChannelName').textContent = ch ? ch.name : channelId;
-      document.getElementById('npMatchTitle').textContent = matchTitle || `بث حي ومباشر • ${ch ? ch.commentator : ''}`;
+      document.getElementById('npMatchTitle').textContent = matchTitle || `بث حي ومباشر • ${ch ? ch.quality : ''} • ${ch ? ch.commentator : ''}`;
+      document.getElementById('playerQualBadge').textContent = `مباشر • ${ch ? ch.quality : 'FHD'}`;
 
       const overlay = document.getElementById('playerOverlay');
       const spinner = document.getElementById('overlaySpinner');
@@ -1283,8 +1369,8 @@
       overlay.classList.remove('hidden');
       spinner.style.display = 'block';
       playBtn.style.display = 'none';
-      titleEl.textContent = `جاري تشغيل ${ch ? ch.name : ''} ...`;
-      subEl.textContent = 'يتم الآن سحب البث وتجهيزه عبر محرك CINEMANA LIVE Restream FHD';
+      titleEl.textContent = `جاري تشغيل ${ch ? ch.name : ''} (${ch ? ch.quality : ''}) ...`;
+      subEl.textContent = 'يتم الآن سحب البث عبر خط الـ IPTV المخصص وتجهيزه بدون تقطيع';
 
       document.getElementById('playerStage').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -1403,11 +1489,11 @@
     async function openAdminModal() {
       const res = await fetch('/api/admin/config');
       const data = await res.json();
-      document.getElementById('admMaxConn').value = (data.iptv_panel && data.iptv_panel.max_connections) || 1;
+      document.getElementById('admMaxConn').value = (data.iptv_panel && data.iptv_panel.max_connections) || 5;
       const container = document.getElementById('admChannelsList');
       container.innerHTML = (data.channels || []).map((ch, i) => `
         <div class="form-row">
-          <label>${ch.name} (رابط البث المباشر .ts أو .m3u8):</label>
+          <label>${ch.name} (${ch.quality}) - الحساب المخصص [${ch.account_user || ''}]:</label>
           <input type="text" id="ch_url_${i}" value="${ch.source_url}" />
         </div>
       `).join('');
@@ -1419,7 +1505,7 @@
     }
 
     async function saveAdminConfig() {
-      const maxConn = parseInt(document.getElementById('admMaxConn').value || '1', 10);
+      const maxConn = parseInt(document.getElementById('admMaxConn').value || '5', 10);
       const updated = CHANNELS.map((ch, i) => ({
         ...ch,
         source_url: document.getElementById(`ch_url_${i}`).value.trim()
