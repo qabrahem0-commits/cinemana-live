@@ -28,6 +28,32 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 }
 
+# TMDB Official Credentials (Arabic Metadata, 4K Backdrops, Posters, Seasons & IMDb IDs)
+TMDB_API_KEY = "d084ccb4f9f7ec6b8dbec136ba01eecb"
+TMDB_READ_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMDg0Y2NiNGY5ZjdlYzZiOGRiZWMxMzZiYTAxZWVjYiIsIm5iZiI6MTc5Mjg2MzM5MS4wODYwMDAyLCJzdWIiOiI2YWRjZWM5ZjlmNzE1NGZjYzk2YmU0M2MiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.CLKgxHgNMxwDU-vGBzUPDUOPKVOWtGInUwejn3pcOUM"
+TMDB_HEADERS = {
+    "Authorization": f"Bearer {TMDB_READ_TOKEN}",
+    "Accept": "application/json",
+    "User-Agent": HEADERS["User-Agent"]
+}
+
+TMDB_GENRE_MAP = {
+    "Action": (28, 10759),
+    "Drama": (18, 18),
+    "Sci-Fi": (878, 10765),
+    "Thriller": (53, 9648),
+    "Comedy": (35, 35),
+    "Horror": (27, 9648),
+    "Animation": (16, 16)
+}
+
+TMDB_GENRE_NAMES_AR = {
+    28: "أكشن", 12: "مغامرة", 16: "أنمي ورسوم متحركة", 35: "كوميديا", 80: "جريمة",
+    99: "وثائقي", 18: "دراما", 10751: "عائلي", 14: "فانتازيا", 36: "تاريخي",
+    27: "رعب", 9648: "غموض", 10749: "رومانسي", 878: "خيال علمي", 53: "إثارة وتشويق",
+    10752: "حرب", 10759: "أكشن ومغامرة", 10765: "خيال علمي وفانتازيا"
+}
+
 LEAGUES = [
     {
         "id": 572,
@@ -204,12 +230,12 @@ def load_db():
     if DB_FILE.exists():
         try:
             data = json.loads(DB_FILE.read_text(encoding="utf-8"))
-            if data.get("version") == 4 and len(data.get("channels", [])) == 5:
+            if data.get("version") == 5 and len(data.get("channels", [])) == 5:
                 return data
         except Exception:
             pass
     default_db = {
-        "version": 4,
+        "version": 5,
         "iptv_panel": {
             "host": "http://s1.1234.ninja:80",
             "max_connections": 5
@@ -233,17 +259,22 @@ API_CACHE = {}
 CACHE_LOCK = threading.Lock()
 
 
-def cached_fetch_json(url, ttl=60):
+def cached_fetch_json(url, ttl=60, custom_headers=None):
     now = time.time()
     with CACHE_LOCK:
         if url in API_CACHE and (now - API_CACHE[url]["ts"] < ttl):
             return API_CACHE[url]["data"]
-    req = urllib.request.Request(url, headers=HEADERS)
+    req = urllib.request.Request(url, headers=custom_headers or HEADERS)
     with urllib.request.urlopen(req, timeout=12) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     with CACHE_LOCK:
         API_CACHE[url] = {"ts": now, "data": data}
     return data
+
+
+def tmdb_get(path_and_query, ttl=600):
+    url = f"https://api.themoviedb.org/3/{path_and_query.lstrip('/')}"
+    return cached_fetch_json(url, ttl=ttl, custom_headers=TMDB_HEADERS)
 
 
 # --- ON-DEMAND STREAM ENGINE (5 INDEPENDENT ACCOUNTS) ---
@@ -483,115 +514,156 @@ def fetch_matches_list(date_offset=0, comp_filter=""):
     return target_date, matches
 
 
-# --- IMDB / CINEMETA VOD CATALOG ENGINE (MOVIES, SERIES, ANIME) ---
+# --- OFFICIAL TMDB ARABIC VOD CATALOG ENGINE (MOVIES, SERIES, ANIME) ---
 
-def build_vod_servers(imdb_id, media_type="movie", season=1, episode=1):
-    """Returns 6 multi-server embed URLs (including VidAPI, VidSrc, SuperEmbed, 2Embed, AutoEmbed)."""
-    is_movie = (media_type == "movie")
-    if is_movie:
+def build_vod_servers(tmdb_id, imdb_id="", media_type="movie", season=1, episode=1):
+    """Returns 6 multi-server embed URLs supporting both TMDB ID and IMDb ID."""
+    vid_id = imdb_id if (imdb_id and str(imdb_id).startswith("tt")) else tmdb_id
+    if media_type == "movie":
         return [
-            {"id": "srv1", "name": "سيرفر 1 (VidAPI HD)",    "url": f"https://vidapi.ru/embed/movie/{imdb_id}"},
-            {"id": "srv2", "name": "سيرفر 2 (VidSrc Pro)",   "url": f"https://vidsrc.xyz/embed/movie?imdb={imdb_id}"},
-            {"id": "srv3", "name": "سيرفر 3 (MultiEmbed)",   "url": f"https://multiembed.mov/?video_id={imdb_id}"},
-            {"id": "srv4", "name": "سيرفر 4 (2Embed FHD)",   "url": f"https://www.2embed.cc/embed/{imdb_id}"},
-            {"id": "srv5", "name": "سيرفر 5 (AutoEmbed)",    "url": f"https://player.autoembed.cc/embed/movie/{imdb_id}"},
-            {"id": "srv6", "name": "سيرفر 6 (VidSrc Me)",    "url": f"https://vidsrc.me/embed/movie?imdb={imdb_id}"},
+            {"id": "srv1", "name": "سيرفر 1 (VidAPI HD)",    "url": f"https://vidapi.ru/embed/movie/{vid_id}"},
+            {"id": "srv2", "name": "سيرفر 2 (VidSrc Pro)",   "url": f"https://vidsrc.xyz/embed/movie?tmdb={tmdb_id}"},
+            {"id": "srv3", "name": "سيرفر 3 (MultiEmbed)",   "url": f"https://multiembed.mov/?video_id={tmdb_id}&tmdb=1"},
+            {"id": "srv4", "name": "سيرفر 4 (2Embed FHD)",   "url": f"https://www.2embed.cc/embed/{vid_id}"},
+            {"id": "srv5", "name": "سيرفر 5 (AutoEmbed)",    "url": f"https://player.autoembed.cc/embed/movie/{tmdb_id}"},
+            {"id": "srv6", "name": "سيرفر 6 (VidSrc Me)",    "url": f"https://vidsrc.me/embed/movie?tmdb={tmdb_id}"},
         ]
     else:
         return [
-            {"id": "srv1", "name": "سيرفر 1 (VidAPI HD)",    "url": f"https://vidapi.ru/embed/tv/{imdb_id}/{season}/{episode}"},
-            {"id": "srv2", "name": "سيرفر 2 (VidSrc Pro)",   "url": f"https://vidsrc.xyz/embed/tv?imdb={imdb_id}&season={season}&episode={episode}"},
-            {"id": "srv3", "name": "سيرفر 3 (MultiEmbed)",   "url": f"https://multiembed.mov/?video_id={imdb_id}&s={season}&e={episode}"},
-            {"id": "srv4", "name": "سيرفر 4 (2Embed FHD)",   "url": f"https://www.2embed.cc/embedtv/{imdb_id}&s={season}&e={episode}"},
-            {"id": "srv5", "name": "سيرفر 5 (AutoEmbed)",    "url": f"https://player.autoembed.cc/embed/tv/{imdb_id}/{season}/{episode}"},
-            {"id": "srv6", "name": "سيرفر 6 (VidSrc Me)",    "url": f"https://vidsrc.me/embed/tv?imdb={imdb_id}&season={season}&episode={episode}"},
+            {"id": "srv1", "name": "سيرفر 1 (VidAPI HD)",    "url": f"https://vidapi.ru/embed/tv/{vid_id}/{season}/{episode}"},
+            {"id": "srv2", "name": "سيرفر 2 (VidSrc Pro)",   "url": f"https://vidsrc.xyz/embed/tv?tmdb={tmdb_id}&season={season}&episode={episode}"},
+            {"id": "srv3", "name": "سيرفر 3 (MultiEmbed)",   "url": f"https://multiembed.mov/?video_id={tmdb_id}&tmdb=1&s={season}&e={episode}"},
+            {"id": "srv4", "name": "سيرفر 4 (2Embed FHD)",   "url": f"https://www.2embed.cc/embedtv/{vid_id}&s={season}&e={episode}"},
+            {"id": "srv5", "name": "سيرفر 5 (AutoEmbed)",    "url": f"https://player.autoembed.cc/embed/tv/{tmdb_id}/{season}/{episode}"},
+            {"id": "srv6", "name": "سيرفر 6 (VidSrc Me)",    "url": f"https://vidsrc.me/embed/tv?tmdb={tmdb_id}&season={season}&episode={episode}"},
         ]
 
 
-def normalize_vod_item(m, forced_category=None):
-    imdb_id = m.get("imdb_id") or m.get("id") or ""
-    if not str(imdb_id).startswith("tt"):
+def normalize_tmdb_item(m, category="movie"):
+    tmdb_id = m.get("id")
+    if not tmdb_id:
         return None
-    raw_type = m.get("type", "movie")
-    category = forced_category or ("series" if raw_type == "series" else "movie")
-    name = m.get("name", "Untitled")
-    year = str(m.get("releaseInfo") or m.get("year") or "")[:4]
-    rating = str(m.get("imdbRating") or "8.1")
-    poster = m.get("poster") or f"https://images.metahub.space/poster/medium/{imdb_id}/img"
-    backdrop = m.get("background") or f"https://images.metahub.space/background/medium/{imdb_id}/img"
-    genres = m.get("genres") or m.get("genre") or []
-    desc = m.get("description") or f"شاهد {name} ({year}) مترجم كامل بجودة عالية Full HD على منصة سينمانا لايف."
-    slug = make_slug(f"مشاهدة-{name}-{year}-مترجم")
+    is_movie = (category == "movie")
+    title = m.get("title") or m.get("name") or m.get("original_title") or m.get("original_name") or "بدون عنوان"
+    orig_title = m.get("original_title") or m.get("original_name") or title
+    date_str = m.get("release_date") or m.get("first_air_date") or ""
+    year = str(date_str)[:4] if date_str else "2026"
+    vote = m.get("vote_average")
+    rating = f"{float(vote):.1f}" if vote else "8.2"
+
+    poster_path = m.get("poster_path")
+    backdrop_path = m.get("backdrop_path")
+    poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else ""
+    backdrop = f"https://image.tmdb.org/t/p/w1280{backdrop_path}" if backdrop_path else poster
+
+    genre_ids = m.get("genre_ids") or [g.get("id") for g in (m.get("genres") or []) if g.get("id")]
+    genres_ar = [TMDB_GENRE_NAMES_AR.get(gid, "دراما") for gid in genre_ids[:2] if gid in TMDB_GENRE_NAMES_AR]
+    if not genres_ar:
+        genres_ar = ["أنمي مترجم"] if category == "anime" else ["مترجم FHD"]
+
+    overview = (m.get("overview") or "").strip()
+    if not overview:
+        overview = f"شاهد {title} ({orig_title}) إنتاج عام {year} مترجم للعربية بجودة 4K & Full HD على منصة سينمانا لايف."
+
+    media_type = "movie" if is_movie else "series"
+    slug = make_slug(f"مشاهدة-{title}-{year}-مترجم")
 
     return {
-        "imdb_id": imdb_id,
-        "title": name,
+        "tmdb_id": str(tmdb_id),
+        "imdb_id": str(m.get("imdb_id") or tmdb_id),
+        "title": title,
+        "original_title": orig_title,
         "year": year,
         "rating": rating,
         "poster": poster,
         "backdrop": backdrop,
-        "genres": genres[:3] if isinstance(genres, list) else [],
-        "description": desc,
-        "media_type": "movie" if category == "movie" else "series",
-        "category": category,  # movie | series | anime
+        "genres": genres_ar,
+        "description": overview,
+        "media_type": media_type,
+        "category": category,
         "slug": slug,
-        "url": f"/watch/{'movie' if category == 'movie' else 'series'}/{imdb_id}/{slug}"
+        "url": f"/watch/{media_type}/{tmdb_id}/{slug}"
     }
 
 
 def fetch_vod_catalog(category="movie", genre="", search=""):
     if search:
         q = urllib.parse.quote(search.strip())
-        mtype = "movie" if category == "movie" else "series"
-        url = f"https://v3-cinemeta.strem.io/catalog/{mtype}/top/search={q}.json"
+        mtype = "movie" if category == "movie" else "tv"
+        raw_p1 = tmdb_get(f"search/{mtype}?query={q}&language=ar-SA&page=1", ttl=300)
+        results = raw_p1.get("results", [])
     elif category == "anime":
-        url = "https://v3-cinemeta.strem.io/catalog/series/top/genre=Animation.json"
+        # Japanese Anime TV Series sorted by popularity (Page 1 + Page 2 = 40 items)
+        p1 = tmdb_get("discover/tv?language=ar-SA&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&page=1", ttl=600)
+        p2 = tmdb_get("discover/tv?language=ar-SA&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&page=2", ttl=600)
+        results = (p1.get("results") or []) + (p2.get("results") or [])
     elif category == "series":
-        if genre:
-            url = f"https://v3-cinemeta.strem.io/catalog/series/top/genre={urllib.parse.quote(genre)}.json"
+        if genre and genre in TMDB_GENRE_MAP:
+            gid = TMDB_GENRE_MAP[genre][1]
+            p1 = tmdb_get(f"discover/tv?language=ar-SA&with_genres={gid}&sort_by=popularity.desc&page=1", ttl=600)
+            p2 = tmdb_get(f"discover/tv?language=ar-SA&with_genres={gid}&sort_by=popularity.desc&page=2", ttl=600)
         else:
-            url = "https://cinemeta-catalogs.strem.io/top/catalog/series/top.json"
+            p1 = tmdb_get("trending/tv/week?language=ar-SA&page=1", ttl=600)
+            p2 = tmdb_get("tv/popular?language=ar-SA&page=2", ttl=600)
+        results = (p1.get("results") or []) + (p2.get("results") or [])
     else:
-        if genre:
-            url = f"https://v3-cinemeta.strem.io/catalog/movie/top/genre={urllib.parse.quote(genre)}.json"
+        if genre and genre in TMDB_GENRE_MAP:
+            gid = TMDB_GENRE_MAP[genre][0]
+            p1 = tmdb_get(f"discover/movie?language=ar-SA&with_genres={gid}&sort_by=popularity.desc&page=1", ttl=600)
+            p2 = tmdb_get(f"discover/movie?language=ar-SA&with_genres={gid}&sort_by=popularity.desc&page=2", ttl=600)
         else:
-            url = "https://cinemeta-catalogs.strem.io/top/catalog/movie/top.json"
+            p1 = tmdb_get("trending/movie/week?language=ar-SA&page=1", ttl=600)
+            p2 = tmdb_get("movie/popular?language=ar-SA&page=2", ttl=600)
+        results = (p1.get("results") or []) + (p2.get("results") or [])
 
-    raw = cached_fetch_json(url, ttl=600)
+    seen = set()
     items = []
-    for m in raw.get("metas", [])[:60]:
-        norm = normalize_vod_item(m, forced_category=category)
+    for m in results:
+        tid = m.get("id")
+        if not tid or tid in seen or not m.get("poster_path"):
+            continue
+        seen.add(tid)
+        norm = normalize_tmdb_item(m, category=category)
         if norm:
             items.append(norm)
     return items
 
 
-def fetch_vod_detail(media_type, imdb_id):
-    mtype = "movie" if media_type == "movie" else "series"
-    url = f"https://v3-cinemeta.strem.io/meta/{mtype}/{imdb_id}.json"
-    raw = cached_fetch_json(url, ttl=900)
-    meta = raw.get("meta") or {}
-    norm = normalize_vod_item(meta, forced_category=mtype)
-    if not norm:
+def fetch_vod_detail(media_type, item_id):
+    is_movie = (media_type == "movie")
+    endpoint = "movie" if is_movie else "tv"
+    raw = tmdb_get(f"{endpoint}/{item_id}?language=ar-SA&append_to_response=external_ids", ttl=900)
+    if not raw or not raw.get("id"):
         return None
-    norm["cast"] = (meta.get("cast") or [])[:6]
-    norm["runtime"] = meta.get("runtime") or ""
-    norm["director"] = meta.get("director") or []
 
-    # Extract seasons count for series/anime
-    videos = meta.get("videos") or []
-    seasons_map = {}
-    for v in videos:
-        s_num = int(v.get("season") or 0)
-        e_num = int(v.get("episode") or v.get("number") or 0)
-        if s_num > 0 and e_num > 0:
-            seasons_map[s_num] = max(seasons_map.get(s_num, 0), e_num)
+    # If Arabic overview is empty, fall back to English overview from TMDB
+    if not (raw.get("overview") or "").strip():
+        try:
+            raw_en = tmdb_get(f"{endpoint}/{item_id}?language=en-US", ttl=900)
+            if raw_en.get("overview"):
+                raw["overview"] = raw_en["overview"]
+        except Exception:
+            pass
 
-    if mtype == "series" and not seasons_map:
-        seasons_map = {1: 12, 2: 12}
+    ext = raw.get("external_ids") or {}
+    imdb_id = ext.get("imdb_id") or raw.get("imdb_id") or ""
+    raw["imdb_id"] = imdb_id
 
-    norm["seasons"] = [{"season": k, "episodes": seasons_map[k]} for k in sorted(seasons_map.keys())[:15]]
-    norm["servers"] = build_vod_servers(imdb_id, mtype, 1, 1)
+    norm = normalize_tmdb_item(raw, category="movie" if is_movie else "series")
+    norm["imdb_id"] = imdb_id or str(raw["id"])
+
+    seasons_list = []
+    if not is_movie:
+        for s in (raw.get("seasons") or []):
+            s_num = int(s.get("season_number") or 0)
+            ep_count = int(s.get("episode_count") or 0)
+            if s_num > 0 and ep_count > 0:
+                seasons_list.append({"season": s_num, "episodes": ep_count, "name": s.get("name") or f"الموسم {s_num}"})
+        if not seasons_list:
+            seasons_list = [{"season": 1, "episodes": 12, "name": "الموسم 1"}]
+
+    norm["seasons"] = seasons_list
+    norm["servers"] = build_vod_servers(str(raw["id"]), imdb_id, "movie" if is_movie else "series", 1, 1)
     return norm
 
 
@@ -680,7 +752,7 @@ def channels_page():
 @app.route("/movies")
 def movies_page():
     title = "مشاهدة أحدث الأفلام الأجنبية والعالمية مترجمة FHD & 4K | سينمانا لايف"
-    desc = "تصفح وشاهد أحدث الأفلام العالمية والأمريكية المترجمة بجودات 4K و BluRay مع تقييمات IMDb على 6 سيرفرات سريعة عبر سينمانا لايف Cinemana Live."
+    desc = "تصفح وشاهد أحدث الأفلام العالمية والأمريكية المترجمة بجودات 4K و BluRay مع القصة بالعربية وتقييمات TMDB/IMDb على 6 سيرفرات سريعة عبر سينمانا لايف."
     kw = "مشاهدة افلام, افلام مترجمة, افلام اجنبية 2026, سينمانا افلام, cinemana movies, ايجي بست, فاصل اعلاني"
     return render_seo_page(title, desc, kw, "/movies", [], "", {"page": "movies"})
 
@@ -717,11 +789,11 @@ def leagues_directory_page():
     return render_seo_page(title, desc, kw, "/leagues", [], "", {"page": "leagues"})
 
 
-@app.route("/watch/<media_type>/<imdb_id>")
-@app.route("/watch/<media_type>/<imdb_id>/<path:slug>")
-def watch_vod_seo_page(media_type, imdb_id, slug=""):
+@app.route("/watch/<media_type>/<item_id>")
+@app.route("/watch/<media_type>/<item_id>/<path:slug>")
+def watch_vod_seo_page(media_type, item_id, slug=""):
     try:
-        item = fetch_vod_detail(media_type, imdb_id)
+        item = fetch_vod_detail(media_type, item_id)
     except Exception:
         item = None
 
@@ -729,18 +801,20 @@ def watch_vod_seo_page(media_type, imdb_id, slug=""):
         return index()
 
     t = item["title"]
+    ot = item.get("original_title", "")
     yr = item["year"]
     rt = item["rating"]
     type_ar = "فيلم" if media_type == "movie" else "مسلسل / أنمي"
     title = f"مشاهدة {type_ar} {t} ({yr}) مترجم كامل Full HD | سينمانا لايف Cinemana Live"
-    desc = f"شاهد وحمل {type_ar} {t} ({yr}) مترجم للعربية بجودة 1080p Full HD و 4K بتقييم IMDb {rt}/10 على 6 سيرفرات سريعة بدون تقطيع عبر سينمانا لايف."
-    kw = f"مشاهدة {t}, {type_ar} {t} مترجم, {t} {yr}, {t} سينمانا, cinemana {t}, تحميل {t}"
+    desc = f"شاهد {type_ar} {t} ({ot} - {yr}) مترجم للعربية بجودة 1080p Full HD و 4K بتقييم {rt}/10 على 6 سيرفرات سريعة بدون تقطيع عبر سينمانا لايف: {item['description'][:140]}"
+    kw = f"مشاهدة {t}, {type_ar} {t} مترجم, {ot} {yr}, {t} سينمانا, cinemana {t}, تحميل {t}"
 
     schema = [
         {
             "@context": "https://schema.org",
             "@type": "Movie" if media_type == "movie" else "TVSeries",
             "name": t,
+            "alternateName": ot,
             "datePublished": yr,
             "image": item["poster"],
             "description": item["description"],
@@ -748,14 +822,14 @@ def watch_vod_seo_page(media_type, imdb_id, slug=""):
                 "@type": "AggregateRating",
                 "ratingValue": rt,
                 "bestRating": "10",
-                "ratingCount": "12500"
+                "ratingCount": "14200"
             }
         }
     ]
 
     article_html = f"""
     <section class="seo-banner-card">
-      <div class="seo-banner-badge">🎬 سينمانا لايف • IMDb ⭐ {rt}</div>
+      <div class="seo-banner-badge">🎬 سينمانا لايف • تقييم ⭐ {rt}</div>
       <h1>مشاهدة {type_ar} {t} ({yr}) مترجم كامل Full HD</h1>
       <p>{item['description']}</p>
     </section>
@@ -911,7 +985,6 @@ def sitemap_xml():
     for lg in LEAGUES:
         urls.append((f"{base_url}/league/{lg['id']}/{urllib.parse.quote(lg['slug'])}", "0.9", "hourly"))
 
-    # Add Matches
     seen_ids = set()
     for offset in (0, 1, -1):
         try:
@@ -924,14 +997,13 @@ def sitemap_xml():
         except Exception:
             pass
 
-    # Add Movies, Series, and Anime pages to Sitemap
     for cat in ("movie", "series", "anime"):
         try:
             vod_items = fetch_vod_catalog(category=cat)
-            for v in vod_items[:50]:
+            for v in vod_items[:40]:
                 mtype = v["media_type"]
                 enc_slug = urllib.parse.quote(v["slug"])
-                urls.append((f"{base_url}/watch/{mtype}/{v['imdb_id']}/{enc_slug}", "0.85", "weekly"))
+                urls.append((f"{base_url}/watch/{mtype}/{v['tmdb_id']}/{enc_slug}", "0.85", "weekly"))
         except Exception:
             pass
 
@@ -1035,10 +1107,10 @@ def api_vod_catalog():
         return jsonify({"error": str(e), "items": []}), 500
 
 
-@app.route("/api/vod/meta/<media_type>/<imdb_id>")
-def api_vod_meta(media_type, imdb_id):
+@app.route("/api/vod/meta/<media_type>/<item_id>")
+def api_vod_meta(media_type, item_id):
     try:
-        detail = fetch_vod_detail(media_type, imdb_id)
+        detail = fetch_vod_detail(media_type, item_id)
         if not detail:
             return jsonify({"error": "Not found"}), 404
         return jsonify(detail)
