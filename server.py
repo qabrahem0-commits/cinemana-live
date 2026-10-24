@@ -28,7 +28,6 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 }
 
-# Popular Leagues Configuration (365Scores IDs + SEO Slugs & Rich Descriptions)
 LEAGUES = [
     {
         "id": 572,
@@ -116,8 +115,7 @@ LEAGUES = [
 PRIORITY_COMP_IDS = {l["id"]: idx for idx, l in enumerate(LEAGUES)}
 LEAGUES_BY_ID = {str(l["id"]): l for l in LEAGUES}
 
-# 5 Dedicated IPTV Accounts mapped 1-to-1 to the 5 beIN Sports Channels:
-# 2x 4K + 2x Full HD 1080p + 1x 720p HD
+# 5 Dedicated Broadcast Channels (2x 4K + 2x Full HD 1080p + 1x 720p HD)
 DEFAULT_CHANNELS = [
     {
         "id": "bein1",
@@ -125,6 +123,7 @@ DEFAULT_CHANNELS = [
         "name": "beIN Sports 1 4K",
         "category": "beIN Sports",
         "quality": "4K Ultra HD",
+        "desc": "القناة الصوتية الأولى لنقل قمم دوري أبطال أوروبا والدوري الإنجليزي الممتاز بدقة 4K فائقة الوضوح.",
         "account_user": "16443423",
         "source_url": "http://s1.1234.ninja:80/live/16443423/47768244/722942.ts",
         "backup_urls": [
@@ -140,6 +139,7 @@ DEFAULT_CHANNELS = [
         "name": "beIN Sports 2 4K",
         "category": "beIN Sports",
         "quality": "4K Ultra HD",
+        "desc": "تغطية حصرية لمباريات الدوري الإسباني (لاليغا) وقمم الكرة الأوروبية بدقة 4K بدون تقطيع.",
         "account_user": "23413277",
         "source_url": "http://s1.1234.ninja:80/live/23413277/64368196/722943.ts",
         "backup_urls": [
@@ -155,6 +155,7 @@ DEFAULT_CHANNELS = [
         "name": "beIN Sports 3 FHD",
         "category": "beIN Sports",
         "quality": "1080p Full HD",
+        "desc": "بث مباشر لمباريات الدوري الإيطالي (الكالتشيو) والبطولات القارية الكبرى بدقة Full HD 1080p.",
         "account_user": "34589374",
         "source_url": "http://s1.1234.ninja:80/live/34589374/72437113/722944.ts",
         "backup_urls": [
@@ -170,6 +171,7 @@ DEFAULT_CHANNELS = [
         "name": "beIN Sports 4 FHD",
         "category": "beIN Sports",
         "quality": "1080p Full HD",
+        "desc": "نقل حي ومباشر لمباريات الدوري الألماني (بوندسليغا) والدوري الفرنسي بدقة 1080p FHD.",
         "account_user": "71545171",
         "source_url": "http://s1.1234.ninja:80/live/71545171/64955659/722945.ts",
         "backup_urls": [
@@ -185,6 +187,7 @@ DEFAULT_CHANNELS = [
         "name": "beIN Sports 5 HD",
         "category": "beIN Sports",
         "quality": "720p HD",
+        "desc": "بث مباشر سريع ومستقر بدقة 720p HD مثالي للاتصالات المتوسطة والهواتف الذكية لنقل البطولات العربية والآسيوية.",
         "account_user": "27186725",
         "source_url": "http://s1.1234.ninja:80/live/27186725/18165811/704925.ts",
         "backup_urls": [
@@ -201,12 +204,12 @@ def load_db():
     if DB_FILE.exists():
         try:
             data = json.loads(DB_FILE.read_text(encoding="utf-8"))
-            if data.get("version") == 2 and len(data.get("channels", [])) == 5:
+            if data.get("version") == 3 and len(data.get("channels", [])) == 5:
                 return data
         except Exception:
             pass
     default_db = {
-        "version": 2,
+        "version": 3,
         "iptv_panel": {
             "host": "http://s1.1234.ninja:80",
             "max_connections": 5
@@ -243,8 +246,8 @@ def cached_fetch_json(url, ttl=30):
     return data
 
 
-# --- ON-DEMAND FFMPEG RESTREAM ENGINE (5 INDEPENDENT ACCOUNTS) ---
-ACTIVE_STREAMS = {}  # channel_id -> {"proc": Popen, "last_access": timestamp, "source": url}
+# --- ON-DEMAND STREAM ENGINE (5 INDEPENDENT ACCOUNTS) ---
+ACTIVE_STREAMS = {}
 STREAM_LOCK = threading.Lock()
 
 
@@ -296,12 +299,10 @@ def start_restream_process(channel_id, ch_obj, max_conn=5):
             info["last_access"] = time.time()
             return True
 
-        # Clean dead processes
         for cid, inf in list(ACTIVE_STREAMS.items()):
             if inf["proc"].poll() is not None:
                 ACTIVE_STREAMS.pop(cid, None)
 
-        # Since each channel has its own dedicated IPTV account, all 5 can run simultaneously!
         while len(ACTIVE_STREAMS) >= max(1, int(max_conn)):
             oldest_cid = min(ACTIVE_STREAMS.keys(), key=lambda k: ACTIVE_STREAMS[k]["last_access"])
             old_info = ACTIVE_STREAMS.pop(oldest_cid, None)
@@ -315,12 +316,11 @@ def start_restream_process(channel_id, ch_obj, max_conn=5):
                     except Exception:
                         pass
 
-        # Try primary URL, then failover to backup URLs if needed
         for cand_url in candidates:
             if not cand_url:
                 continue
             m3u8_out = _spawn_ffmpeg(channel_id, cand_url)
-            for _ in range(28):  # Wait up to 7s
+            for _ in range(28):
                 if m3u8_out.exists() and m3u8_out.stat().st_size > 40:
                     return True
                 if ACTIVE_STREAMS[channel_id]["proc"].poll() is not None:
@@ -348,7 +348,6 @@ def stop_restream_process(channel_id):
 
 
 def reaper_loop():
-    """Automatically stop restream processes that have had no viewers for >120 seconds."""
     while True:
         time.sleep(15)
         now = time.time()
@@ -381,6 +380,19 @@ def auto_assign_channel(comp_id):
 def make_slug(text):
     s = re.sub(r"[^\w\s-]", "", str(text), flags=re.UNICODE).strip()
     return re.sub(r"[\s_]+", "-", s)
+
+
+def sanitize_channel_public(ch):
+    """Strip internal source URLs and account credentials before sending to browser."""
+    return {
+        "id": ch["id"],
+        "num": ch.get("num", "1"),
+        "name": ch["name"],
+        "category": ch.get("category", "beIN Sports"),
+        "quality": ch.get("quality", "1080p FHD"),
+        "desc": ch.get("desc", ""),
+        "commentator": ch.get("commentator", "بث مباشر")
+    }
 
 
 def fetch_matches_list(date_offset=0, comp_filter=""):
@@ -472,7 +484,7 @@ def fetch_matches_list(date_offset=0, comp_filter=""):
     return target_date, matches
 
 
-# --- SSR SEO RENDERING ENGINE ---
+# --- SSR MULTI-PAGE & SEO RENDERING ENGINE ---
 
 def render_seo_page(title, description, keywords, canonical_path="/", schema_list=None, seo_article_html="", boot_state=None):
     html_tpl = (BASE_DIR / "index.html").read_text(encoding="utf-8")
@@ -507,15 +519,15 @@ def render_seo_page(title, description, keywords, canonical_path="/", schema_lis
     return Response(html_out, mimetype="text/html; charset=utf-8")
 
 
-# --- ROUTES ---
+# --- MULTI-PAGE ROUTES ---
 
 @app.route("/")
 def index():
     base_url = request.host_url.rstrip("/")
     title = "سينمانا لايف | Cinemana Live - بث مباشر للمباريات اليوم بدون تقطيع 4K & FHD"
     desc = (
-        "موقع سينمانا لايف (Cinemana Live) لمشاهدة مباريات اليوم بث مباشر بدون تقطيع بجودات 4K و Full HD و 720p "
-        "على قنوات beIN Sports 1-5 مع جداول الترتيب ونتائج دوري أبطال أوروبا، الدوري الإنجليزي، الدوري الإسباني، والدوري العراقي."
+        "منصة سينمانا لايف (Cinemana Live) الرياضية لمشاهدة مباريات اليوم بث مباشر بدون تقطيع بجودات 4K و Full HD و 720p "
+        "مع جداول الترتيب ونتائج دوري أبطال أوروبا، الدوري الإنجليزي، الدوري الإسباني، ودوري نجوم العراق."
     )
     kw = (
         "سينمانا لايف, cinemana live, بث مباشر للمباريات, مباريات اليوم بث مباشر, يلا شوت, كورة لايف, "
@@ -530,18 +542,44 @@ def index():
             "url": base_url + "/",
             "potentialAction": {
                 "@type": "SearchAction",
-                "target": f"{base_url}/?q={{search_term_string}}",
+                "target": f"{base_url}/matches?q={{search_term_string}}",
                 "query-input": "required name=search_term_string"
             }
-        },
-        {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "Cinemana Live",
-            "url": base_url + "/"
         }
     ]
-    return render_seo_page(title, desc, kw, "/", schemas)
+    return render_seo_page(title, desc, kw, "/", schemas, "", {"page": "home"})
+
+
+@app.route("/matches")
+def matches_page():
+    title = "جدول مباريات اليوم والغد والنتائج المباشرة | سينمانا لايف Cinemana Live"
+    desc = "تعرف على جدول مواعيد مباريات اليوم والغد ونتائج مباريات الأمس في جميع الدوريات الأوروبية والعربية مع القنوات الناقلة والمعلقين على سينمانا لايف."
+    kw = "جدول مباريات اليوم, مواعيد مباريات اليوم, مباريات الغد, نتائج المباريات, سينمانا لايف, cinemana live"
+    return render_seo_page(title, desc, kw, "/matches", [], "", {"page": "matches"})
+
+
+@app.route("/channels")
+def channels_page():
+    title = "القنوات الرياضية المباشرة (beIN Sports 1-5 4K & FHD) | سينمانا لايف"
+    desc = "شاهد البث المباشر لقنوات beIN Sports الرياضية من 1 إلى 5 بجودات 4K Ultra HD و Full HD 1080p و 720p HD على مدار الساعة عبر منصة سينمانا لايف."
+    kw = "قنوات بين سبورت بث مباشر, beIN Sports 1 4K, beIN Sports 2 4K, بث مباشر قنوات رياضية, سينمانا لايف"
+    return render_seo_page(title, desc, kw, "/channels", [], "", {"page": "channels"})
+
+
+@app.route("/standings")
+def standings_page():
+    title = "جداول ترتيب الدوريات الأوروبية والعربية 2026 | سينمانا لايف Cinemana Live"
+    desc = "تابع جدول ترتيب الدوري الإنجليزي، الدوري الإسباني، دوري أبطال أوروبا، الدوري الإيطالي، الدوري الألماني، ودوري نجوم العراق محدثاً لحظة بلحظة."
+    kw = "جدول ترتيب الدوري الإنجليزي, ترتيب الدوري الإسباني, ترتيب دوري أبطال أوروبا, ترتيب الدوري العراقي, سينمانا لايف"
+    return render_seo_page(title, desc, kw, "/standings", [], "", {"page": "standings", "initial_league": "7"})
+
+
+@app.route("/leagues")
+def leagues_directory_page():
+    title = "البطولات والدوريات العالمية والعربية | سينمانا لايف Cinemana Live"
+    desc = "تصفح جميع أقسام الدوريات والبطولات الكبرى على سينمانا لايف: دوري أبطال أوروبا، البريميرليغ، لاليغا، الكالتشيو، البوندسليغا، ودوري نجوم العراق."
+    kw = "الدوريات الأوروبية, البطولات العالمية, دوري أبطال أوروبا, الدوري الإنجليزي, سينمانا لايف"
+    return render_seo_page(title, desc, kw, "/leagues", [], "", {"page": "leagues"})
 
 
 @app.route("/match/<game_id>")
@@ -596,22 +634,22 @@ def match_seo_page(game_id, slug=""):
     ]
 
     article_html = f"""
-    <section class="seo-hub-box" style="margin-bottom:1.5rem;">
-      <h1 style="font-size:1.35rem; font-weight:900; color:#fff; margin-bottom:0.5rem;">
-        🔴 مشاهدة مباراة {h} ضد {a} بث مباشر اليوم في {comp}
-      </h1>
-      <p style="font-size:0.9rem; color:#cbd5e1; line-height:1.75;">
-        يقدم لكم موقع <strong>سينمانا لايف (Cinemana Live)</strong> تغطية حية وبث مباشر لمباراة <strong>{h}</strong> أمام نظيره <strong>{a}</strong>
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">🔴 تغطية مباشرة للمباراة</div>
+      <h1>مشاهدة مباراة {h} ضد {a} بث مباشر اليوم في {comp}</h1>
+      <p>
+        يقدم لكم موقع <strong>سينمانا لايف (Cinemana Live)</strong> البث المباشر لمباراة <strong>{h}</strong> أمام نظيره <strong>{a}</strong>
         ضمن منافسات بطولة <strong>{comp}</strong>. تنطلق صافرة بداية اللقاء اليوم <strong>{sdate}</strong> في تمام الساعة <strong>{stime}</strong> بتوقيت بغداد ومكة المكرمة،
-        وتنقل المباراة حصرياً عبر قناة <strong>{ch_name} ({target_Match['channel_quality']})</strong> بصوت المعلق <strong>{comm}</strong>.
+        وتنقل المباراة عبر قناة <strong>{ch_name} ({target_Match['channel_quality']})</strong> بصوت المعلق <strong>{comm}</strong>.
       </p>
     </section>
     """
 
     boot = {
+        "page": "match_detail",
         "auto_channel": target_Match["channel_id"],
         "match_title": f"{h} ضد {a} ({comp})",
-        "highlight_match_id": str(game_id)
+        "match_obj": target_Match
     }
     return render_seo_page(title, desc, kw, target_Match["url"], schema, article_html, boot)
 
@@ -629,16 +667,15 @@ def league_seo_page(comp_id, slug=""):
     kw = f"{name}, بث مباشر {name}, جدول ترتيب {name}, مباريات {name} اليوم, نتائج {name}, سينمانا لايف, cinemana live"
 
     article_html = f"""
-    <section class="seo-hub-box" style="margin-bottom:1.5rem;">
-      <h1 style="font-size:1.35rem; font-weight:900; color:#fff; margin-bottom:0.5rem;">
-        {lg['badge']} مباريات وجدول ترتيب {name} بث مباشر
-      </h1>
-      <p style="font-size:0.9rem; color:#cbd5e1; line-height:1.75;">
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">{lg['badge']} القسم الخاص بالبطولة</div>
+      <h1>مباريات وجدول ترتيب {name} بث مباشر</h1>
+      <p>
         {desc} تابع جميع مواعيد المباريات والنتائج الفورية وترتيب الفرق والنقاط في <strong>{name}</strong> مع البث الحي عبر قنوات beIN Sports 4K & FHD.
       </p>
     </section>
     """
-    boot = {"initial_league": str(comp_id)}
+    boot = {"page": "league_detail", "initial_league": str(comp_id)}
     return render_seo_page(title, desc, kw, f"/league/{comp_id}/{lg['slug']}", [], article_html, boot)
 
 
@@ -656,16 +693,15 @@ def channel_seo_page(channel_id):
     kw = f"قناة {cname} بث مباشر, مشاهدة {cname} بدون تقطيع, {cname} live, بث مباشر بين سبورت {ch['num']}, سينمانا لايف"
 
     article_html = f"""
-    <section class="seo-hub-box" style="margin-bottom:1.5rem;">
-      <h1 style="font-size:1.35rem; font-weight:900; color:#fff; margin-bottom:0.5rem;">
-        📺 بث مباشر قناة {cname} ({cqual}) بدون تقطيع
-      </h1>
-      <p style="font-size:0.9rem; color:#cbd5e1; line-height:1.75;">
-        شاهد الآن البث الحي المباشر لقناة <strong>{cname}</strong> بدقة <strong>{cqual}</strong> على مدار الساعة عبر محرك Restream سينمانا لايف السريع بدون إعلانات مزعجة أو تقطيع.
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">📺 البث الحي للقناة • {cqual}</div>
+      <h1>بث مباشر قناة {cname} ({cqual}) بدون تقطيع</h1>
+      <p>
+        {ch.get('desc', '')} شاهد الآن البث الحي المباشر لقناة <strong>{cname}</strong> بدقة <strong>{cqual}</strong> على مدار الساعة عبر مشغل سينمانا لايف السريع.
       </p>
     </section>
     """
-    boot = {"auto_channel": channel_id, "match_title": f"البث المباشر لقناة {cname} ({cqual})"}
+    boot = {"page": "channel_detail", "auto_channel": channel_id, "match_title": f"البث المباشر لقناة {cname} ({cqual})"}
     return render_seo_page(title, desc, kw, f"/channel/{channel_id}", [], article_html, boot)
 
 
@@ -678,17 +714,18 @@ def sitemap_xml():
     now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     urls = [
         (f"{base_url}/", "1.0", "always"),
+        (f"{base_url}/matches", "0.95", "always"),
+        (f"{base_url}/channels", "0.95", "hourly"),
+        (f"{base_url}/standings", "0.95", "hourly"),
+        (f"{base_url}/leagues", "0.90", "daily"),
     ]
 
-    # Add all 5 channels
     for ch in DEFAULT_CHANNELS:
         urls.append((f"{base_url}/channel/{ch['id']}", "0.9", "hourly"))
 
-    # Add all 9 leagues
     for lg in LEAGUES:
         urls.append((f"{base_url}/league/{lg['id']}/{urllib.parse.quote(lg['slug'])}", "0.9", "hourly"))
 
-    # Add all matches for yesterday, today, and tomorrow (~200-350 indexable match pages!)
     seen_ids = set()
     for offset in (0, 1, -1):
         try:
@@ -719,7 +756,6 @@ def robots_txt():
         base_url = "https://" + base_url[len("http://"):]
     txt = f"""User-agent: *
 Allow: /
-Disallow: /api/admin/
 Sitemap: {base_url}/sitemap.xml
 """
     return Response(txt, mimetype="text/plain; charset=utf-8")
@@ -730,9 +766,10 @@ Sitemap: {base_url}/sitemap.xml
 @app.route("/api/init")
 def api_init():
     db = load_db()
+    public_channels = [sanitize_channel_public(c) for c in db.get("channels", DEFAULT_CHANNELS)]
     return jsonify({
         "leagues": LEAGUES,
-        "channels": db.get("channels", DEFAULT_CHANNELS),
+        "channels": public_channels,
         "active_streams": list(ACTIVE_STREAMS.keys())
     })
 
@@ -789,8 +826,6 @@ def api_standings():
         return jsonify({"error": str(e), "rows": []}), 500
 
 
-# --- STREAM & RESTREAM ENDPOINTS ---
-
 @app.route("/api/stream/<channel_id>")
 def api_get_stream(channel_id):
     db = load_db()
@@ -806,16 +841,14 @@ def api_get_stream(channel_id):
     if use_restream and src:
         ok = start_restream_process(channel_id, ch, max_conn=max_conn)
         return jsonify({
-            "channel": ch,
+            "channel": sanitize_channel_public(ch),
             "ready": ok,
-            "mode": "restream_hls",
             "play_url": f"/hls/{channel_id}/index.m3u8?t={int(time.time())}"
         })
 
     return jsonify({
-        "channel": ch,
+        "channel": sanitize_channel_public(ch),
         "ready": True,
-        "mode": "direct_hls",
         "play_url": src
     })
 
@@ -836,33 +869,6 @@ def serve_hls(channel_id, filename):
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp.headers["Access-Control-Allow-Origin"] = "*"
     return resp
-
-
-# --- ADMIN & IPTV PANEL ENDPOINTS ---
-
-@app.route("/api/admin/config", methods=["GET", "POST"])
-def api_admin_config():
-    db = load_db()
-    if request.method == "POST":
-        body = request.get_json(force=True)
-        if "iptv_panel" in body:
-            db["iptv_panel"] = body["iptv_panel"]
-        if "channels" in body:
-            db["channels"] = body["channels"]
-        save_db(db)
-        return jsonify({"status": "saved", "db": db})
-
-    with STREAM_LOCK:
-        active_info = {
-            cid: {"source": inf["source"], "started_at": inf["started_at"]}
-            for cid, inf in ACTIVE_STREAMS.items()
-            if inf["proc"].poll() is None
-        }
-    return jsonify({
-        "iptv_panel": db.get("iptv_panel", {}),
-        "channels": db.get("channels", DEFAULT_CHANNELS),
-        "active_restreams": active_info
-    })
 
 
 if __name__ == "__main__":
