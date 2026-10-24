@@ -1421,25 +1421,27 @@
       if (item.backdrop) {
         hero.style.backgroundImage = `url('${item.backdrop}')`;
       }
-      document.getElementById('heroImdb').textContent = `⭐ IMDb ${item.rating} • ${item.year} • 4K FHD`;
+      const vodId = item.tmdb_id || item.imdb_id;
+      document.getElementById('heroImdb').textContent = `⭐ TMDB ${item.rating} • ${item.year} • 4K FHD`;
       document.getElementById('heroTitle').textContent = `مشاهدة ${item.title} (${item.year}) مترجم + بث مباريات اليوم 4K`;
       document.getElementById('heroDesc').textContent = item.description;
       const btn = document.getElementById('heroPrimaryBtn');
       btn.textContent = `▶ مشاهدة ${item.title} الآن`;
-      btn.onclick = () => openVodWatch(item.media_type, item.imdb_id, item.slug);
+      btn.onclick = () => openVodWatch(item.media_type, vodId, item.slug);
     }
 
     function renderVodGrid(containerId, items) {
       const grid = document.getElementById(containerId);
       if (!grid) return;
       if (!items || !items.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--text-muted);">جاري تحميل المكتبة...</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--text-muted);">جاري تحميل المكتبة من TMDB...</div>`;
         return;
       }
       grid.innerHTML = items.map((it, idx) => {
         const typeLabel = it.category === 'anime' ? 'أنمي' : (it.media_type === 'series' ? 'مسلسل' : 'فيلم');
+        const vodId = it.tmdb_id || it.imdb_id;
         return `
-          <a href="${it.url}" class="vod-card" style="animation-delay:${Math.min(idx * 0.02, 0.35)}s" onclick="openVodWatch('${it.media_type}', '${it.imdb_id}', '${it.slug}'); return false;">
+          <a href="${it.url}" class="vod-card" style="animation-delay:${Math.min(idx * 0.02, 0.35)}s" onclick="openVodWatch('${it.media_type}', '${vodId}', '${it.slug}'); return false;">
             <div class="vod-poster-wrap">
               <img src="${it.poster}" loading="lazy" onerror="this.src='${FALLBACK_LOGO}'" alt="${it.title}" />
               <div class="vod-rating-badge">⭐ ${it.rating}</div>
@@ -1570,9 +1572,9 @@
       currentVodCategory = cat;
       showView('vod_catalog');
       const titles = {
-        movie: '🎬 مكتبة الأفلام العالمية المترجمة (IMDb Movies)',
-        series: '📺 مكتبة المسلسلات الأجنبية والعالمية (IMDb Series)',
-        anime: '🔥 مكتبة الأنمي الياباني المترجم (Top Anime)'
+        movie: '🎬 مكتبة الأفلام العالمية المترجمة (TMDB Movies)',
+        series: '📺 مكتبة المسلسلات الأجنبية والعالمية (TMDB Series)',
+        anime: '🔥 مكتبة الأنمي الياباني المترجم (TMDB Anime)'
       };
       document.getElementById('vodCatalogTitle').textContent = titles[cat] || titles.movie;
       document.getElementById('vodGenrePills').style.display = (cat === 'anime') ? 'none' : 'flex';
@@ -1603,8 +1605,8 @@
       }, 380);
     }
 
-    async function openVodWatch(mediaType, imdbId, slug = '') {
-      const targetUrl = `/watch/${mediaType}/${imdbId}/${slug}`;
+    async function openVodWatch(mediaType, vodId, slug = '') {
+      const targetUrl = `/watch/${mediaType}/${vodId}/${slug}`;
       window.history.pushState({}, '', targetUrl);
 
       document.getElementById('playerStage').style.display = 'block';
@@ -1617,7 +1619,7 @@
       document.getElementById('overlayTitle').textContent = 'جاري جلب بيانات العرض وسيرفرات المشاهدة...';
 
       try {
-        const res = await fetch(`/api/vod/meta/${mediaType}/${imdbId}`);
+        const res = await fetch(`/api/vod/meta/${mediaType}/${vodId}`);
         const item = await res.json();
         startVodPlayback(item);
       } catch (e) {
@@ -1689,30 +1691,33 @@
       loadCurrentVodIframe();
     }
 
-    function buildClientVodServers(imdbId, mediaType, s, e) {
+    function buildClientVodServers(detail, s, e) {
+      const tmdbId = detail.tmdb_id || detail.imdb_id || '';
+      const imdbId = detail.imdb_id || tmdbId;
+      const mediaType = detail.media_type || 'movie';
       if (mediaType === 'movie') {
         return [
           { name: 'سيرفر 1 (VidAPI HD)',  url: `https://vidapi.ru/embed/movie/${imdbId}` },
-          { name: 'سيرفر 2 (VidSrc Pro)', url: `https://vidsrc.xyz/embed/movie?imdb=${imdbId}` },
-          { name: 'سيرفر 3 (MultiEmbed)', url: `https://multiembed.mov/?video_id=${imdbId}` },
+          { name: 'سيرفر 2 (VidSrc Pro)', url: `https://vidsrc.xyz/embed/movie?tmdb=${tmdbId}` },
+          { name: 'سيرفر 3 (MultiEmbed)', url: `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1` },
           { name: 'سيرفر 4 (2Embed FHD)', url: `https://www.2embed.cc/embed/${imdbId}` },
-          { name: 'سيرفر 5 (AutoEmbed)',  url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
-          { name: 'سيرفر 6 (VidSrc Me)',  url: `https://vidsrc.me/embed/movie?imdb=${imdbId}` }
+          { name: 'سيرفر 5 (AutoEmbed)',  url: `https://player.autoembed.cc/embed/movie/${tmdbId}` },
+          { name: 'سيرفر 6 (VidSrc Me)',  url: `https://vidsrc.me/embed/movie?tmdb=${tmdbId}` }
         ];
       }
       return [
         { name: 'سيرفر 1 (VidAPI HD)',  url: `https://vidapi.ru/embed/tv/${imdbId}/${s}/${e}` },
-        { name: 'سيرفر 2 (VidSrc Pro)', url: `https://vidsrc.xyz/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` },
-        { name: 'سيرفر 3 (MultiEmbed)', url: `https://multiembed.mov/?video_id=${imdbId}&s=${s}&e=${e}` },
+        { name: 'سيرفر 2 (VidSrc Pro)', url: `https://vidsrc.xyz/embed/tv?tmdb=${tmdbId}&season=${s}&episode=${e}` },
+        { name: 'سيرفر 3 (MultiEmbed)', url: `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${s}&e=${e}` },
         { name: 'سيرفر 4 (2Embed FHD)', url: `https://www.2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
-        { name: 'سيرفر 5 (AutoEmbed)',  url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
-        { name: 'سيرفر 6 (VidSrc Me)',  url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` }
+        { name: 'سيرفر 5 (AutoEmbed)',  url: `https://player.autoembed.cc/embed/tv/${tmdbId}/${s}/${e}` },
+        { name: 'سيرفر 6 (VidSrc Me)',  url: `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${s}&episode=${e}` }
       ];
     }
 
     function renderVodServerButtons() {
       if (!currentVodDetail) return;
-      const srvs = buildClientVodServers(currentVodDetail.imdb_id, currentVodDetail.media_type, currentVodSeason, currentVodEpisode);
+      const srvs = buildClientVodServers(currentVodDetail, currentVodSeason, currentVodEpisode);
       const wrap = document.getElementById('vodServerButtons');
       wrap.innerHTML = srvs.map((srv, idx) => `
         <button class="vod-srv-btn ${idx === currentVodServerIdx ? 'active' : ''}" onclick="selectVodServer(${idx})">
@@ -1729,7 +1734,7 @@
 
     function loadCurrentVodIframe() {
       if (!currentVodDetail) return;
-      const srvs = buildClientVodServers(currentVodDetail.imdb_id, currentVodDetail.media_type, currentVodSeason, currentVodEpisode);
+      const srvs = buildClientVodServers(currentVodDetail, currentVodSeason, currentVodEpisode);
       const chosen = srvs[currentVodServerIdx] || srvs[0];
       document.getElementById('vodIframe').src = chosen.url;
     }
