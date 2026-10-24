@@ -1771,7 +1771,6 @@
 
       if (pageType === 'home') {
         showView('home');
-        await selectLeague('all', false);
       } else if (pageType === 'matches') {
         showView('matches_only');
         await selectLeague('all', false);
@@ -1841,8 +1840,8 @@
       const isHome = (mode === 'home');
       document.getElementById('heroBillboard').style.display = isHome ? 'flex' : 'none';
       document.getElementById('topChannelsDock').style.display = (isHome || mode === 'matches') ? 'block' : 'none';
-      // IMPORTANT: Player is NEVER fixed/forced open when switching views!
-      document.getElementById('viewMatchesContainer').style.display = (isHome || mode === 'matches' || mode === 'matches_only') ? 'block' : 'none';
+      // IMPORTANT: Matches schedule only appears on /matches or league detail pages, NOT on Home!
+      document.getElementById('viewMatchesContainer').style.display = (mode === 'matches' || mode === 'matches_only') ? 'block' : 'none';
       document.getElementById('homeVodShowcase').style.display = isHome ? 'block' : 'none';
       document.getElementById('vodCatalogSection').style.display = (mode === 'vod_catalog') ? 'block' : 'none';
       document.getElementById('vodDetailPageSection').style.display = (mode === 'vod_detail') ? 'block' : 'none';
