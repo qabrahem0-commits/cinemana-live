@@ -204,12 +204,12 @@ def load_db():
     if DB_FILE.exists():
         try:
             data = json.loads(DB_FILE.read_text(encoding="utf-8"))
-            if data.get("version") == 3 and len(data.get("channels", [])) == 5:
+            if data.get("version") == 4 and len(data.get("channels", [])) == 5:
                 return data
         except Exception:
             pass
     default_db = {
-        "version": 3,
+        "version": 4,
         "iptv_panel": {
             "host": "http://s1.1234.ninja:80",
             "max_connections": 5
@@ -228,12 +228,12 @@ def save_db(data):
         pass
 
 
-# --- IN-MEMORY CACHE FOR 365SCORES API ---
+# --- IN-MEMORY CACHE ---
 API_CACHE = {}
 CACHE_LOCK = threading.Lock()
 
 
-def cached_fetch_json(url, ttl=30):
+def cached_fetch_json(url, ttl=60):
     now = time.time()
     with CACHE_LOCK:
         if url in API_CACHE and (now - API_CACHE[url]["ts"] < ttl):
@@ -383,7 +383,6 @@ def make_slug(text):
 
 
 def sanitize_channel_public(ch):
-    """Strip internal source URLs and account credentials before sending to browser."""
     return {
         "id": ch["id"],
         "num": ch.get("num", "1"),
@@ -484,6 +483,118 @@ def fetch_matches_list(date_offset=0, comp_filter=""):
     return target_date, matches
 
 
+# --- IMDB / CINEMETA VOD CATALOG ENGINE (MOVIES, SERIES, ANIME) ---
+
+def build_vod_servers(imdb_id, media_type="movie", season=1, episode=1):
+    """Returns 6 multi-server embed URLs (including VidAPI, VidSrc, SuperEmbed, 2Embed, AutoEmbed)."""
+    is_movie = (media_type == "movie")
+    if is_movie:
+        return [
+            {"id": "srv1", "name": "سيرفر 1 (VidAPI HD)",    "url": f"https://vidapi.ru/embed/movie/{imdb_id}"},
+            {"id": "srv2", "name": "سيرفر 2 (VidSrc Pro)",   "url": f"https://vidsrc.xyz/embed/movie?imdb={imdb_id}"},
+            {"id": "srv3", "name": "سيرفر 3 (MultiEmbed)",   "url": f"https://multiembed.mov/?video_id={imdb_id}"},
+            {"id": "srv4", "name": "سيرفر 4 (2Embed FHD)",   "url": f"https://www.2embed.cc/embed/{imdb_id}"},
+            {"id": "srv5", "name": "سيرفر 5 (AutoEmbed)",    "url": f"https://player.autoembed.cc/embed/movie/{imdb_id}"},
+            {"id": "srv6", "name": "سيرفر 6 (VidSrc Me)",    "url": f"https://vidsrc.me/embed/movie?imdb={imdb_id}"},
+        ]
+    else:
+        return [
+            {"id": "srv1", "name": "سيرفر 1 (VidAPI HD)",    "url": f"https://vidapi.ru/embed/tv/{imdb_id}/{season}/{episode}"},
+            {"id": "srv2", "name": "سيرفر 2 (VidSrc Pro)",   "url": f"https://vidsrc.xyz/embed/tv?imdb={imdb_id}&season={season}&episode={episode}"},
+            {"id": "srv3", "name": "سيرفر 3 (MultiEmbed)",   "url": f"https://multiembed.mov/?video_id={imdb_id}&s={season}&e={episode}"},
+            {"id": "srv4", "name": "سيرفر 4 (2Embed FHD)",   "url": f"https://www.2embed.cc/embedtv/{imdb_id}&s={season}&e={episode}"},
+            {"id": "srv5", "name": "سيرفر 5 (AutoEmbed)",    "url": f"https://player.autoembed.cc/embed/tv/{imdb_id}/{season}/{episode}"},
+            {"id": "srv6", "name": "سيرفر 6 (VidSrc Me)",    "url": f"https://vidsrc.me/embed/tv?imdb={imdb_id}&season={season}&episode={episode}"},
+        ]
+
+
+def normalize_vod_item(m, forced_category=None):
+    imdb_id = m.get("imdb_id") or m.get("id") or ""
+    if not str(imdb_id).startswith("tt"):
+        return None
+    raw_type = m.get("type", "movie")
+    category = forced_category or ("series" if raw_type == "series" else "movie")
+    name = m.get("name", "Untitled")
+    year = str(m.get("releaseInfo") or m.get("year") or "")[:4]
+    rating = str(m.get("imdbRating") or "8.1")
+    poster = m.get("poster") or f"https://images.metahub.space/poster/medium/{imdb_id}/img"
+    backdrop = m.get("background") or f"https://images.metahub.space/background/medium/{imdb_id}/img"
+    genres = m.get("genres") or m.get("genre") or []
+    desc = m.get("description") or f"شاهد {name} ({year}) مترجم كامل بجودة عالية Full HD على منصة سينمانا لايف."
+    slug = make_slug(f"مشاهدة-{name}-{year}-مترجم")
+
+    return {
+        "imdb_id": imdb_id,
+        "title": name,
+        "year": year,
+        "rating": rating,
+        "poster": poster,
+        "backdrop": backdrop,
+        "genres": genres[:3] if isinstance(genres, list) else [],
+        "description": desc,
+        "media_type": "movie" if category == "movie" else "series",
+        "category": category,  # movie | series | anime
+        "slug": slug,
+        "url": f"/watch/{'movie' if category == 'movie' else 'series'}/{imdb_id}/{slug}"
+    }
+
+
+def fetch_vod_catalog(category="movie", genre="", search=""):
+    if search:
+        q = urllib.parse.quote(search.strip())
+        mtype = "movie" if category == "movie" else "series"
+        url = f"https://v3-cinemeta.strem.io/catalog/{mtype}/top/search={q}.json"
+    elif category == "anime":
+        url = "https://v3-cinemeta.strem.io/catalog/series/top/genre=Animation.json"
+    elif category == "series":
+        if genre:
+            url = f"https://v3-cinemeta.strem.io/catalog/series/top/genre={urllib.parse.quote(genre)}.json"
+        else:
+            url = "https://cinemeta-catalogs.strem.io/top/catalog/series/top.json"
+    else:
+        if genre:
+            url = f"https://v3-cinemeta.strem.io/catalog/movie/top/genre={urllib.parse.quote(genre)}.json"
+        else:
+            url = "https://cinemeta-catalogs.strem.io/top/catalog/movie/top.json"
+
+    raw = cached_fetch_json(url, ttl=600)
+    items = []
+    for m in raw.get("metas", [])[:60]:
+        norm = normalize_vod_item(m, forced_category=category)
+        if norm:
+            items.append(norm)
+    return items
+
+
+def fetch_vod_detail(media_type, imdb_id):
+    mtype = "movie" if media_type == "movie" else "series"
+    url = f"https://v3-cinemeta.strem.io/meta/{mtype}/{imdb_id}.json"
+    raw = cached_fetch_json(url, ttl=900)
+    meta = raw.get("meta") or {}
+    norm = normalize_vod_item(meta, forced_category=mtype)
+    if not norm:
+        return None
+    norm["cast"] = (meta.get("cast") or [])[:6]
+    norm["runtime"] = meta.get("runtime") or ""
+    norm["director"] = meta.get("director") or []
+
+    # Extract seasons count for series/anime
+    videos = meta.get("videos") or []
+    seasons_map = {}
+    for v in videos:
+        s_num = int(v.get("season") or 0)
+        e_num = int(v.get("episode") or v.get("number") or 0)
+        if s_num > 0 and e_num > 0:
+            seasons_map[s_num] = max(seasons_map.get(s_num, 0), e_num)
+
+    if mtype == "series" and not seasons_map:
+        seasons_map = {1: 12, 2: 12}
+
+    norm["seasons"] = [{"season": k, "episodes": seasons_map[k]} for k in sorted(seasons_map.keys())[:15]]
+    norm["servers"] = build_vod_servers(imdb_id, mtype, 1, 1)
+    return norm
+
+
 # --- SSR MULTI-PAGE & SEO RENDERING ENGINE ---
 
 def render_seo_page(title, description, keywords, canonical_path="/", schema_list=None, seo_article_html="", boot_state=None):
@@ -524,25 +635,25 @@ def render_seo_page(title, description, keywords, canonical_path="/", schema_lis
 @app.route("/")
 def index():
     base_url = request.host_url.rstrip("/")
-    title = "سينمانا لايف | Cinemana Live - بث مباشر للمباريات اليوم بدون تقطيع 4K & FHD"
+    title = "سينمانا لايف | Cinemana Live - بث مباشر للمباريات ومشاهدة الأفلام والمسلسلات والأنمي 4K"
     desc = (
-        "منصة سينمانا لايف (Cinemana Live) الرياضية لمشاهدة مباريات اليوم بث مباشر بدون تقطيع بجودات 4K و Full HD و 720p "
-        "مع جداول الترتيب ونتائج دوري أبطال أوروبا، الدوري الإنجليزي، الدوري الإسباني، ودوري نجوم العراق."
+        "منصة سينمانا لايف (Cinemana Live) الترفيهية والرياضية الأولى: شاهد مباريات اليوم بث مباشر بدقة 4K & FHD على قنوات beIN Sports "
+        "واستمتع بأحدث الأفلام والمسلسلات العالمية والأنمي المترجم على أكثر من 6 سيرفرات سريعة بدون تقطيع."
     )
     kw = (
-        "سينمانا لايف, cinemana live, بث مباشر للمباريات, مباريات اليوم بث مباشر, يلا شوت, كورة لايف, "
-        "بين سبورت بث مباشر, beIN Sports 1 4K, مشاهدة مباريات اليوم, دوري أبطال أوروبا, الدوري الإنجليزي, الدوري الإسباني, دوري نجوم العراق"
+        "سينمانا, سينمانا لايف, cinemana, cinemana live, شبكتي سينمانا, بث مباشر للمباريات, مشاهدة افلام مترجمة, "
+        "مسلسلات اجنبية, انمي مترجم, beIN Sports 1 4K, مباريات اليوم بث مباشر, دوري أبطال أوروبا, الدوري الإنجليزي"
     )
     schemas = [
         {
             "@context": "https://schema.org",
             "@type": "WebSite",
             "name": "سينمانا لايف - Cinemana Live",
-            "alternateName": "Cinemana Live Sports",
+            "alternateName": "Cinemana Live Sports & Movies",
             "url": base_url + "/",
             "potentialAction": {
                 "@type": "SearchAction",
-                "target": f"{base_url}/matches?q={{search_term_string}}",
+                "target": f"{base_url}/movies?q={{search_term_string}}",
                 "query-input": "required name=search_term_string"
             }
         }
@@ -552,8 +663,8 @@ def index():
 
 @app.route("/matches")
 def matches_page():
-    title = "جدول مباريات اليوم والغد والنتائج المباشرة | سينمانا لايف Cinemana Live"
-    desc = "تعرف على جدول مواعيد مباريات اليوم والغد ونتائج مباريات الأمس في جميع الدوريات الأوروبية والعربية مع القنوات الناقلة والمعلقين على سينمانا لايف."
+    title = "جدول مباريات اليوم والغد والبث المباشر | سينمانا لايف Cinemana Live"
+    desc = "تعرف على جدول مواعيد مباريات اليوم والغد ونتائج مباريات الأمس في جميع الدوريات الأوروبية والعربية مع البث المباشر 4K على سينمانا لايف."
     kw = "جدول مباريات اليوم, مواعيد مباريات اليوم, مباريات الغد, نتائج المباريات, سينمانا لايف, cinemana live"
     return render_seo_page(title, desc, kw, "/matches", [], "", {"page": "matches"})
 
@@ -564,6 +675,30 @@ def channels_page():
     desc = "شاهد البث المباشر لقنوات beIN Sports الرياضية من 1 إلى 5 بجودات 4K Ultra HD و Full HD 1080p و 720p HD على مدار الساعة عبر منصة سينمانا لايف."
     kw = "قنوات بين سبورت بث مباشر, beIN Sports 1 4K, beIN Sports 2 4K, بث مباشر قنوات رياضية, سينمانا لايف"
     return render_seo_page(title, desc, kw, "/channels", [], "", {"page": "channels"})
+
+
+@app.route("/movies")
+def movies_page():
+    title = "مشاهدة أحدث الأفلام الأجنبية والعالمية مترجمة FHD & 4K | سينمانا لايف"
+    desc = "تصفح وشاهد أحدث الأفلام العالمية والأمريكية المترجمة بجودات 4K و BluRay مع تقييمات IMDb على 6 سيرفرات سريعة عبر سينمانا لايف Cinemana Live."
+    kw = "مشاهدة افلام, افلام مترجمة, افلام اجنبية 2026, سينمانا افلام, cinemana movies, ايجي بست, فاصل اعلاني"
+    return render_seo_page(title, desc, kw, "/movies", [], "", {"page": "movies"})
+
+
+@app.route("/series")
+def series_page():
+    title = "مشاهدة المسلسلات الأجنبية والعالمية المترجمة كامل | سينمانا لايف"
+    desc = "شاهد جميع مواسم وحلقات أشهر المسلسلات الأجنبية والعالمية المترجمة بجودة Full HD على 6 سيرفرات مشاهدة مباشرة عبر سينمانا لايف."
+    kw = "مسلسلات اجنبية, مشاهدة مسلسلات مترجمة, سينمانا مسلسلات, cinemana series, مسلسلات نتفلكس"
+    return render_seo_page(title, desc, kw, "/series", [], "", {"page": "series"})
+
+
+@app.route("/anime")
+def anime_page():
+    title = "مشاهدة الأنمي المترجم وحلقات الأنمي الجديدة FHD | سينمانا لايف"
+    desc = "قسم الأنمي المترجم على سينمانا لايف: شاهد أشهر مسلسلات وأفلام الأنمي الياباني المترجمة بجودة خارقة وجميع المواسم والحلقات."
+    kw = "انمي مترجم, مشاهدة انمي, انميات 2026, ون بيس, هجوم العمالقة, سينمانا انمي, anime streaming"
+    return render_seo_page(title, desc, kw, "/anime", [], "", {"page": "anime"})
 
 
 @app.route("/standings")
@@ -580,6 +715,53 @@ def leagues_directory_page():
     desc = "تصفح جميع أقسام الدوريات والبطولات الكبرى على سينمانا لايف: دوري أبطال أوروبا، البريميرليغ، لاليغا، الكالتشيو، البوندسليغا، ودوري نجوم العراق."
     kw = "الدوريات الأوروبية, البطولات العالمية, دوري أبطال أوروبا, الدوري الإنجليزي, سينمانا لايف"
     return render_seo_page(title, desc, kw, "/leagues", [], "", {"page": "leagues"})
+
+
+@app.route("/watch/<media_type>/<imdb_id>")
+@app.route("/watch/<media_type>/<imdb_id>/<path:slug>")
+def watch_vod_seo_page(media_type, imdb_id, slug=""):
+    try:
+        item = fetch_vod_detail(media_type, imdb_id)
+    except Exception:
+        item = None
+
+    if not item:
+        return index()
+
+    t = item["title"]
+    yr = item["year"]
+    rt = item["rating"]
+    type_ar = "فيلم" if media_type == "movie" else "مسلسل / أنمي"
+    title = f"مشاهدة {type_ar} {t} ({yr}) مترجم كامل Full HD | سينمانا لايف Cinemana Live"
+    desc = f"شاهد وحمل {type_ar} {t} ({yr}) مترجم للعربية بجودة 1080p Full HD و 4K بتقييم IMDb {rt}/10 على 6 سيرفرات سريعة بدون تقطيع عبر سينمانا لايف."
+    kw = f"مشاهدة {t}, {type_ar} {t} مترجم, {t} {yr}, {t} سينمانا, cinemana {t}, تحميل {t}"
+
+    schema = [
+        {
+            "@context": "https://schema.org",
+            "@type": "Movie" if media_type == "movie" else "TVSeries",
+            "name": t,
+            "datePublished": yr,
+            "image": item["poster"],
+            "description": item["description"],
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": rt,
+                "bestRating": "10",
+                "ratingCount": "12500"
+            }
+        }
+    ]
+
+    article_html = f"""
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">🎬 سينمانا لايف • IMDb ⭐ {rt}</div>
+      <h1>مشاهدة {type_ar} {t} ({yr}) مترجم كامل Full HD</h1>
+      <p>{item['description']}</p>
+    </section>
+    """
+    boot = {"page": "watch_vod", "vod_item": item}
+    return render_seo_page(title, desc, kw, item["url"], schema, article_html, boot)
 
 
 @app.route("/match/<game_id>")
@@ -716,7 +898,10 @@ def sitemap_xml():
         (f"{base_url}/", "1.0", "always"),
         (f"{base_url}/matches", "0.95", "always"),
         (f"{base_url}/channels", "0.95", "hourly"),
-        (f"{base_url}/standings", "0.95", "hourly"),
+        (f"{base_url}/movies", "0.95", "daily"),
+        (f"{base_url}/series", "0.95", "daily"),
+        (f"{base_url}/anime", "0.95", "daily"),
+        (f"{base_url}/standings", "0.90", "hourly"),
         (f"{base_url}/leagues", "0.90", "daily"),
     ]
 
@@ -726,6 +911,7 @@ def sitemap_xml():
     for lg in LEAGUES:
         urls.append((f"{base_url}/league/{lg['id']}/{urllib.parse.quote(lg['slug'])}", "0.9", "hourly"))
 
+    # Add Matches
     seen_ids = set()
     for offset in (0, 1, -1):
         try:
@@ -735,6 +921,17 @@ def sitemap_xml():
                     seen_ids.add(m["id"])
                     encoded_slug = urllib.parse.quote(m["slug"])
                     urls.append((f"{base_url}/match/{m['id']}/{encoded_slug}", "0.85", "hourly"))
+        except Exception:
+            pass
+
+    # Add Movies, Series, and Anime pages to Sitemap
+    for cat in ("movie", "series", "anime"):
+        try:
+            vod_items = fetch_vod_catalog(category=cat)
+            for v in vod_items[:50]:
+                mtype = v["media_type"]
+                enc_slug = urllib.parse.quote(v["slug"])
+                urls.append((f"{base_url}/watch/{mtype}/{v['imdb_id']}/{enc_slug}", "0.85", "weekly"))
         except Exception:
             pass
 
@@ -824,6 +1021,29 @@ def api_standings():
         return jsonify({"competition_id": comp_id, "rows": rows})
     except Exception as e:
         return jsonify({"error": str(e), "rows": []}), 500
+
+
+@app.route("/api/vod/catalog")
+def api_vod_catalog():
+    category = request.args.get("category", "movie")
+    genre = request.args.get("genre", "")
+    search = request.args.get("q", "")
+    try:
+        items = fetch_vod_catalog(category=category, genre=genre, search=search)
+        return jsonify({"category": category, "total": len(items), "items": items})
+    except Exception as e:
+        return jsonify({"error": str(e), "items": []}), 500
+
+
+@app.route("/api/vod/meta/<media_type>/<imdb_id>")
+def api_vod_meta(media_type, imdb_id):
+    try:
+        detail = fetch_vod_detail(media_type, imdb_id)
+        if not detail:
+            return jsonify({"error": "Not found"}), 404
+        return jsonify(detail)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/stream/<channel_id>")
