@@ -782,27 +782,63 @@ def fetch_vod_detail(media_type, slug_or_id, season_num=1, episode_num=1):
     return norm
 
 
-# --- SSR MULTI-PAGE & SEO RENDERING ENGINE ---
+# --- SSR MULTI-PAGE & SEO RENDERING ENGINE (ZERO DUPLICATE CONTENT, STRICT CANONICALS) ---
 
-def render_seo_page(title, description, keywords, canonical_path="/", schema_list=None, seo_article_html="", boot_state=None, og_image=""):
-    html_tpl = (BASE_DIR / "index.html").read_text(encoding="utf-8")
+PRIMARY_DOMAIN = "https://cinemana.live"
+
+
+def get_canonical_base():
+    host = (request.host or "").lower()
+    if "cinemana.live" in host:
+        return PRIMARY_DOMAIN
     base_url = request.host_url.rstrip("/")
     if request.headers.get("X-Forwarded-Proto") == "https" and base_url.startswith("http://"):
         base_url = "https://" + base_url[len("http://"):]
+    return base_url
 
-    canonical_url = f"{base_url}{canonical_path}"
+
+@app.before_request
+def enforce_canonical_domain_and_slash():
+    host = (request.host or "").lower()
+    path = request.path or "/"
+    # 1. 301 Redirect www.cinemana.live -> https://cinemana.live
+    if host == "www.cinemana.live":
+        return Response("", status=301, headers={"Location": f"{PRIMARY_DOMAIN}{request.full_path.rstrip('?')}"})
+    # 2. 301 Redirect trailing slashes (except root "/")
+    if path != "/" and path.endswith("/") and not path.startswith("/hls/") and not path.startswith("/api/"):
+        clean_path = path.rstrip("/")
+        target = f"{get_canonical_base()}{clean_path}"
+        return Response("", status=301, headers={"Location": target})
+
+
+def render_seo_page(title, description, keywords, canonical_path="/", schema_list=None, seo_article_html="", boot_state=None, og_image="", status_code=200, noindex=False):
+    html_tpl = (BASE_DIR / "index.html").read_text(encoding="utf-8")
+    base_url = get_canonical_base()
+
+    if canonical_path != "/" and canonical_path.endswith("/"):
+        canonical_path = canonical_path.rstrip("/")
+
+    # Percent-encode non-ASCII characters in canonical URL for strict RFC/Google compliance
+    safe_canonical_path = urllib.parse.quote(urllib.parse.unquote(canonical_path), safe="/-_.~")
+    canonical_url = f"{base_url}{safe_canonical_path}"
+
     schemas_json = json.dumps(schema_list or [], ensure_ascii=False)
     boot_json = json.dumps(boot_state or {}, ensure_ascii=False)
 
     if not og_image:
         og_image = "https://image.tmdb.org/t/p/w1280/hoq8AUTtYowqmKWoYwhoAfkMpLr.jpg"
 
+    robots_directive = "noindex, nofollow" if noindex else "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+
     seo_head = f"""
   <title>{title}</title>
   <meta name="description" content="{description}" />
   <meta name="keywords" content="{keywords}" />
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="robots" content="{robots_directive}" />
+  <meta name="googlebot" content="{robots_directive}" />
   <link rel="canonical" href="{canonical_url}" />
+  <link rel="alternate" hreflang="ar" href="{canonical_url}" />
+  <link rel="alternate" hreflang="x-default" href="{canonical_url}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="سينمانا لايف - Cinemana Live" />
   <meta property="og:locale" content="ar_IQ" />
@@ -821,10 +857,25 @@ def render_seo_page(title, description, keywords, canonical_path="/", schema_lis
 """
     html_out = html_tpl.replace("<!-- __SEO_HEAD__ -->", seo_head)
     html_out = html_out.replace("<!-- __SEO_ARTICLE__ -->", seo_article_html)
-    return Response(html_out, mimetype="text/html; charset=utf-8")
+    resp = Response(html_out, status=status_code, mimetype="text/html; charset=utf-8")
+    resp.headers["X-Robots-Tag"] = robots_directive
+    return resp
 
 
-def build_rich_poster_carousel_schema(base_url, items):
+def render_404_seo_page(missing_title="الصفحة غير موجودة"):
+    title = f"404 - {missing_title} | سينمانا لايف Cinemana Live"
+    desc = "عذراً، الرابط الذي تبحث عنه غير متوفر أو تم نقله. تصفح أحدث الأفلام والمسلسلات والأنمي المترجم على سينمانا لايف."
+    article = """
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">⚠️ 404 Not Found</div>
+      <h1>عذراً، الصفحة المطلوبة غير متوفرة حالياً</h1>
+      <p>يرجى العودة إلى الصفحة الرئيسية أو استخدام البحث للوصول إلى الفيلم أو المسلسل المطلوب.</p>
+    </section>
+    """
+    return render_seo_page(title, desc, "سينمانا لايف", request.path, [], article, {"page": "home"}, status_code=404, noindex=True)
+
+
+def build_rich_poster_carousel_schema(base_url, items, list_name="أحدث الأفلام والمسلسلات والأنمي المترجم على سينمانا لايف"):
     """Builds Schema.org ItemList with Movie/TVSeries poster images so Google displays a Poster Carousel under the search snippet."""
     elements = []
     for idx, it in enumerate(items[:12], start=1):
@@ -849,21 +900,34 @@ def build_rich_poster_carousel_schema(base_url, items):
     return {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": "أحدث الأفلام والمسلسلات والأنمي المترجم على سينمانا لايف",
+        "name": list_name,
         "itemListOrder": "https://schema.org/ItemListOrderDescending",
         "numberOfItems": len(elements),
         "itemListElement": elements
     }
 
 
+def build_ssr_vod_links_summary(items, heading):
+    """Generates crawlable SSR HTML links and descriptions so Googlebot sees unique body content on every catalog page."""
+    if not items:
+        return ""
+    links_html = "".join([
+        f'<li><a href="{it["url"]}"><strong>{it["title"]} ({it.get("original_title", "")} {it["year"]})</strong></a> — تقييم {it["rating"]}/10: {it["description"][:110]}...</li>'
+        for it in items[:15]
+    ])
+    return f"""
+    <div class="ssr-crawler-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+      <h1>{heading}</h1>
+      <ul>{links_html}</ul>
+    </div>
+    """
+
+
 # --- MULTI-PAGE ROUTES ---
 
 @app.route("/")
 def index():
-    base_url = request.host_url.rstrip("/")
-    if request.headers.get("X-Forwarded-Proto") == "https" and base_url.startswith("http://"):
-        base_url = "https://" + base_url[len("http://"):]
-
+    base_url = get_canonical_base()
     title = "سينمانا لايف | Cinemana Live - مشاهدة أحدث الأفلام والمسلسلات والأنمي المترجم وبث المباريات 4K"
     desc = (
         "منصة سينمانا لايف (Cinemana Live) الترفيهية الأولى: استمتع بمشاهدة وتحميل أحدث الأفلام العالمية والمسلسلات الأجنبية "
@@ -902,7 +966,8 @@ def index():
     if featured_items:
         schemas.append(build_rich_poster_carousel_schema(base_url, featured_items))
 
-    return render_seo_page(title, desc, kw, "/", schemas, "", {"page": "home"}, og_image=og_img)
+    ssr_summary = build_ssr_vod_links_summary(featured_items, title)
+    return render_seo_page(title, desc, kw, "/", schemas, ssr_summary, {"page": "home"}, og_image=og_img)
 
 
 @app.route("/matches")
@@ -910,7 +975,14 @@ def matches_page():
     title = "جدول مباريات اليوم والغد والبث المباشر | سينمانا لايف Cinemana Live"
     desc = "تعرف على جدول مواعيد مباريات اليوم والغد ونتائج مباريات الأمس في جميع الدوريات الأوروبية والعربية مع البث المباشر بدقة 4K على سينمانا لايف."
     kw = "جدول مباريات اليوم, مواعيد مباريات اليوم, مباريات الغد, نتائج المباريات, سينمانا لايف, cinemana live"
-    return render_seo_page(title, desc, kw, "/matches", [], "", {"page": "matches"})
+    ssr_matches = """
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">⚽ جدول المباريات المحدث</div>
+      <h1>جدول مباريات اليوم والغد والنتائج المباشرة</h1>
+      <p>تابع مواعيد ونتائج مباريات اليوم والغد في دوري أبطال أوروبا، الدوري الإنجليزي، الدوري الإسباني، الإيطالي، الألماني، ودوري نجوم العراق مع البث المباشر بدقة 4K.</p>
+    </section>
+    """
+    return render_seo_page(title, desc, kw, "/matches", [], ssr_matches, {"page": "matches"})
 
 
 @app.route("/channels")
@@ -918,55 +990,65 @@ def channels_page():
     title = "القنوات الرياضية المباشرة (4K Ultra HD & Full HD) | سينمانا لايف"
     desc = "شاهد البث المباشر للقنوات الرياضية المشفرة والمفتوحة بجودات 4K Ultra HD و Full HD 1080p و 720p HD على مدار الساعة عبر منصة سينمانا لايف."
     kw = "قنوات رياضية بث مباشر, بث مباشر مباريات 4K, قنوات رياضية بدون تقطيع, سينمانا لايف"
-    return render_seo_page(title, desc, kw, "/channels", [], "", {"page": "channels"})
+    ssr_ch = """
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">📺 القنوات المباشرة 24/7</div>
+      <h1>دليل القنوات الرياضية المباشرة بجودة 4K & Full HD</h1>
+      <p>بث حي ومباشر على مدار الساعة لأهم القنوات الرياضية العالمية والعربية بجودات متعددة (4K Ultra HD، 1080p FHD، و 720p HD) تناسب جميع سرعات الإنترنت.</p>
+    </section>
+    """
+    return render_seo_page(title, desc, kw, "/channels", [], ssr_ch, {"page": "channels"})
 
 
 @app.route("/movies")
 def movies_page():
-    base_url = request.host_url.rstrip("/")
+    base_url = get_canonical_base()
     title = "مشاهدة أحدث الأفلام الأجنبية والعالمية مترجمة FHD & 4K | سينمانا لايف"
     desc = "تصفح وشاهد أحدث الأفلام العالمية والأمريكية المترجمة بجودات 4K و BluRay مع القصة بالعربية وتقييمات TMDB/IMDb على 6 سيرفرات سريعة عبر سينمانا لايف."
     kw = "مشاهدة افلام, افلام مترجمة, افلام اجنبية 2026, سينمانا افلام, cinemana movies"
     items = []
     try:
-        items = fetch_vod_catalog("movie")[:12]
+        items = fetch_vod_catalog("movie")[:16]
     except Exception:
         pass
-    schemas = [build_rich_poster_carousel_schema(base_url, items)] if items else []
+    schemas = [build_rich_poster_carousel_schema(base_url, items, "أحدث الأفلام الأجنبية والعالمية المترجمة")] if items else []
     og_img = items[0]["poster"] if items else ""
-    return render_seo_page(title, desc, kw, "/movies", schemas, "", {"page": "movies"}, og_image=og_img)
+    ssr_summary = build_ssr_vod_links_summary(items, title)
+    return render_seo_page(title, desc, kw, "/movies", schemas, ssr_summary, {"page": "movies"}, og_image=og_img)
 
 
 @app.route("/series")
 def series_page():
-    base_url = request.host_url.rstrip("/")
+    base_url = get_canonical_base()
     title = "مشاهدة المسلسلات الأجنبية والعالمية المترجمة كامل | سينمانا لايف"
     desc = "شاهد جميع مواسم وحلقات أشهر المسلسلات الأجنبية والعالمية المترجمة بجودة Full HD على 6 سيرفرات مشاهدة مباشرة عبر سينمانا لايف."
     kw = "مسلسلات اجنبية, مشاهدة مسلسلات مترجمة, سينمانا مسلسلات, cinemana series"
     items = []
     try:
-        items = fetch_vod_catalog("series")[:12]
+        items = fetch_vod_catalog("series")[:16]
     except Exception:
         pass
-    schemas = [build_rich_poster_carousel_schema(base_url, items)] if items else []
+    schemas = [build_rich_poster_carousel_schema(base_url, items, "أشهر المسلسلات الأجنبية والعالمية المترجمة")] if items else []
     og_img = items[0]["poster"] if items else ""
-    return render_seo_page(title, desc, kw, "/series", schemas, "", {"page": "series"}, og_image=og_img)
+    ssr_summary = build_ssr_vod_links_summary(items, title)
+    return render_seo_page(title, desc, kw, "/series", schemas, ssr_summary, {"page": "series"}, og_image=og_img)
 
 
 @app.route("/anime")
 def anime_page():
-    base_url = request.host_url.rstrip("/")
+    base_url = get_canonical_base()
     title = "مشاهدة الأنمي المترجم وحلقات الأنمي الجديدة FHD | سينمانا لايف"
     desc = "قسم الأنمي المترجم على سينمانا لايف: شاهد أشهر مسلسلات وأفلام الأنمي الياباني المترجمة بجودة خارقة وجميع المواسم والحلقات."
     kw = "انمي مترجم, مشاهدة انمي, انميات 2026, ون بيس, هجوم العمالقة, سينمانا انمي"
     items = []
     try:
-        items = fetch_vod_catalog("anime")[:12]
+        items = fetch_vod_catalog("anime")[:16]
     except Exception:
         pass
-    schemas = [build_rich_poster_carousel_schema(base_url, items)] if items else []
+    schemas = [build_rich_poster_carousel_schema(base_url, items, "أحدث وأشهر مسلسلات الأنمي المترجم")] if items else []
     og_img = items[0]["poster"] if items else ""
-    return render_seo_page(title, desc, kw, "/anime", schemas, "", {"page": "anime"}, og_image=og_img)
+    ssr_summary = build_ssr_vod_links_summary(items, title)
+    return render_seo_page(title, desc, kw, "/anime", schemas, ssr_summary, {"page": "anime"}, og_image=og_img)
 
 
 @app.route("/standings")
@@ -974,7 +1056,14 @@ def standings_page():
     title = "جداول ترتيب الدوريات الأوروبية والعربية 2026 | سينمانا لايف Cinemana Live"
     desc = "تابع جدول ترتيب الدوري الإنجليزي، الدوري الإسباني، دوري أبطال أوروبا، الدوري الإيطالي، الدوري الألماني، ودوري نجوم العراق محدثاً لحظة بلحظة."
     kw = "جدول ترتيب الدوري الإنجليزي, ترتيب الدوري الإسباني, ترتيب دوري أبطال أوروبا, ترتيب الدوري العراقي, سينمانا لايف"
-    return render_seo_page(title, desc, kw, "/standings", [], "", {"page": "standings", "initial_league": "7"})
+    ssr_st = """
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">🏆 ترتيب البطولات</div>
+      <h1>جداول ترتيب الدوريات الأوروبية والعربية 2026</h1>
+      <p>ترتيب الفرق والنقاط وعدد المباريات والأهداف في الدوري الإنجليزي الممتاز، الدوري الإسباني، دوري أبطال أوروبا، ودوري نجوم العراق.</p>
+    </section>
+    """
+    return render_seo_page(title, desc, kw, "/standings", [], ssr_st, {"page": "standings", "initial_league": "7"})
 
 
 @app.route("/leagues")
@@ -982,7 +1071,14 @@ def leagues_directory_page():
     title = "البطولات والدوريات العالمية والعربية | سينمانا لايف Cinemana Live"
     desc = "تصفح جميع أقسام الدوريات والبطولات الكبرى على سينمانا لايف: دوري أبطال أوروبا، البريميرليغ، لاليغا، الكالتشيو، البوندسليغا، ودوري نجوم العراق."
     kw = "الدوريات الأوروبية, البطولات العالمية, دوري أبطال أوروبا, الدوري الإنجليزي, سينمانا لايف"
-    return render_seo_page(title, desc, kw, "/leagues", [], "", {"page": "leagues"})
+    ssr_lg = """
+    <section class="seo-banner-card">
+      <div class="seo-banner-badge">🌍 دليل البطولات</div>
+      <h1>جميع البطولات والدوريات العالمية والعربية</h1>
+      <p>اختر البطولة لمتابعة جدول المباريات والنتائج وترتيب المجموعات والفرق محدثاً بشكل فوري.</p>
+    </section>
+    """
+    return render_seo_page(title, desc, kw, "/leagues", [], ssr_lg, {"page": "leagues"})
 
 
 # --- DEDICATED MOVIE, SERIES, SEASON & EPISODE SEO ROUTES ---
@@ -991,7 +1087,13 @@ def leagues_directory_page():
 def movie_detail_seo_page(slug):
     item = fetch_vod_detail("movie", slug)
     if not item:
-        return movies_page()
+        return render_404_seo_page("الفيلم غير موجود")
+
+    base_url = get_canonical_base()
+    # If requested via numeric ID or non-canonical slug, 301 redirect to clean canonical slug
+    if str(slug).lower() != str(item["slug"]).lower():
+        return Response("", status=301, headers={"Location": f"{base_url}/movie/{item['slug']}"})
+
     t = item["title"]
     ot = item["original_title"]
     yr = item["year"]
@@ -1000,27 +1102,43 @@ def movie_detail_seo_page(slug):
     title = f"مشاهدة فيلم {t} ({ot} {yr}) مترجم Full HD & 4K | سينمانا لايف"
     desc = f"مشاهدة وتحميل فيلم {t} ({ot} - {yr}) مترجم للعربية كامل بجودة 4K & 1080p Full HD بتقييم {rt}/10 على 6 سيرفرات سريعة: {item['description'][:150]}"
     kw = f"مشاهدة فيلم {t}, فيلم {ot} {yr} مترجم, {ot} سينمانا, watch {ot} online, cinemana {ot}"
-    schema = [{
-        "@context": "https://schema.org",
-        "@type": "Movie",
-        "name": t,
-        "alternateName": ot,
-        "datePublished": yr,
-        "image": [item["poster"], item["backdrop"]],
-        "description": item["description"],
-        "aggregateRating": {"@type": "AggregateRating", "ratingValue": rt, "bestRating": "10", "ratingCount": "15400"}
-    }]
+    schema = [
+        {
+            "@context": "https://schema.org",
+            "@type": "Movie",
+            "name": t,
+            "alternateName": ot,
+            "datePublished": yr,
+            "image": [item["poster"], item["backdrop"]],
+            "description": item["description"],
+            "aggregateRating": {"@type": "AggregateRating", "ratingValue": rt, "bestRating": "10", "ratingCount": "15400"}
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "سينمانا لايف", "item": f"{base_url}/"},
+                {"@type": "ListItem", "position": 2, "name": "الأفلام", "item": f"{base_url}/movies"},
+                {"@type": "ListItem", "position": 3, "name": f"فيلم {t} ({yr})", "item": f"{base_url}{canonical}"}
+            ]
+        }
+    ]
+    article_html = f"""
+    <article class="ssr-crawler-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+      <h1>{title}</h1>
+      <p>{item['description']}</p>
+      <p>السنة: {yr} | التقييم: {rt}/10 | التصنيفات: {', '.join(item.get('genres', []))} | الأبطال: {', '.join(item.get('cast', []))}</p>
+    </article>
+    """
     boot = {"page": "vod_detail", "vod_item": item, "auto_play_vod": False}
-    return render_seo_page(title, desc, kw, canonical, schema, "", boot, og_image=item["poster"])
+    return render_seo_page(title, desc, kw, canonical, schema, article_html, boot, og_image=item["poster"])
 
 
 @app.route("/series/<slug>")
 @app.route("/series/<slug>/season-<int:season_num>")
 @app.route("/series/<slug>/season-<int:season_num>/<episode_slug>")
 def series_detail_seo_page(slug, season_num=1, episode_slug=""):
-    base_url = request.host_url.rstrip("/")
-    if request.headers.get("X-Forwarded-Proto") == "https" and base_url.startswith("http://"):
-        base_url = "https://" + base_url[len("http://"):]
+    base_url = get_canonical_base()
 
     ep_num = 1
     auto_play = False
@@ -1032,7 +1150,7 @@ def series_detail_seo_page(slug, season_num=1, episode_slug=""):
 
     item = fetch_vod_detail("series", slug, season_num=season_num, episode_num=ep_num)
     if not item:
-        return series_page()
+        return render_404_seo_page("المسلسل أو الأنمي غير موجود")
 
     t = item["title"]
     ot = item["original_title"]
@@ -1066,51 +1184,102 @@ def series_detail_seo_page(slug, season_num=1, episode_slug=""):
         title = f"مشاهدة {label_ar} {t} ({ot}) الموسم {season_num} الحلقة {ep_num} ({ep_title_en}) مترجمة | سينمانا لايف"
         desc = f"شاهد {label_ar} {t} ({ot}) الموسم {season_num} الحلقة {ep_num} بعنوان ({ep_title_en}) مترجمة للعربية بجودة Full HD 1080p & 4K على 6 سيرفرات سريعة عبر سينمانا لايف: {(ep_obj.get('overview') if ep_obj else '') or item['description'][:140]}"
         kw = f"{label_ar} {t} الموسم {season_num} الحلقة {ep_num}, {ot} season {season_num} episode {ep_num}, {ot} s{season_num}e{ep_num} مترجم, سينمانا {ot}"
-        schema = [{
-            "@context": "https://schema.org",
-            "@type": "TVEpisode",
-            "name": f"{ot} - Season {season_num} Episode {ep_num}: {ep_title_en}",
-            "episodeNumber": ep_num,
-            "partOfSeason": {"@type": "TVSeason", "seasonNumber": season_num},
-            "partOfSeries": {"@type": "TVSeries", "name": t, "alternateName": ot},
-            "image": [ep_img, item["poster"]],
-            "description": desc
-        }]
+        schema = [
+            {
+                "@context": "https://schema.org",
+                "@type": "TVEpisode",
+                "name": f"{ot} - Season {season_num} Episode {ep_num}: {ep_title_en}",
+                "episodeNumber": ep_num,
+                "partOfSeason": {"@type": "TVSeason", "seasonNumber": season_num},
+                "partOfSeries": {"@type": "TVSeries", "name": t, "alternateName": ot},
+                "image": [ep_img, item["poster"]],
+                "description": desc
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "سينمانا لايف", "item": f"{base_url}/"},
+                    {"@type": "ListItem", "position": 2, "name": "المسلسلات والأنمي", "item": f"{base_url}/series"},
+                    {"@type": "ListItem", "position": 3, "name": t, "item": f"{base_url}/series/{item['slug']}"},
+                    {"@type": "ListItem", "position": 4, "name": f"الموسم {season_num}", "item": f"{base_url}/series/{item['slug']}/season-{season_num}"},
+                    {"@type": "ListItem", "position": 5, "name": f"الحلقة {ep_num} ({ep_title_en})", "item": f"{base_url}{canonical}"}
+                ]
+            }
+        ]
         og_target = ep_img
     elif request.path.endswith(f"/season-{season_num}"):
         canonical = f"/series/{item['slug']}/season-{season_num}"
         title = f"مشاهدة {label_ar} {t} ({ot}) الموسم {season_num} كامل جميع الحلقات مترجم | سينمانا لايف"
         desc = f"جميع حلقات {label_ar} {t} ({ot}) الموسم {season_num} مترجمة للعربية بجودة Full HD & 4K على 6 سيرفرات مشاهدة مباشرة عبر سينمانا لايف: {item['description'][:140]}"
         kw = f"{label_ar} {t} الموسم {season_num}, {ot} season {season_num} مترجم, حلقات {t} الموسم {season_num}"
-        schema = [{
-            "@context": "https://schema.org",
-            "@type": "TVSeason",
-            "name": f"{t} - الموسم {season_num}",
-            "seasonNumber": season_num,
-            "image": item["poster"],
-            "partOfSeries": {"@type": "TVSeries", "name": t, "alternateName": ot}
-        }]
+        schema = [
+            {
+                "@context": "https://schema.org",
+                "@type": "TVSeason",
+                "name": f"{t} - الموسم {season_num}",
+                "seasonNumber": season_num,
+                "image": item["poster"],
+                "partOfSeries": {"@type": "TVSeries", "name": t, "alternateName": ot}
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "سينمانا لايف", "item": f"{base_url}/"},
+                    {"@type": "ListItem", "position": 2, "name": "المسلسلات والأنمي", "item": f"{base_url}/series"},
+                    {"@type": "ListItem", "position": 3, "name": t, "item": f"{base_url}/series/{item['slug']}"},
+                    {"@type": "ListItem", "position": 4, "name": f"الموسم {season_num}", "item": f"{base_url}{canonical}"}
+                ]
+            }
+        ]
         if ep_carousel_elements:
             schema.append({"@context": "https://schema.org", "@type": "ItemList", "itemListElement": ep_carousel_elements})
         og_target = item["poster"]
     else:
         canonical = f"/series/{item['slug']}"
+        # 301 redirect if accessed via numeric ID or uppercase slug
+        if str(slug).lower() != str(item["slug"]).lower():
+            return Response("", status=301, headers={"Location": f"{base_url}{canonical}"})
         title = f"مشاهدة {label_ar} {t} ({ot} {yr}) جميع المواسم والحلقات مترجم | سينمانا لايف"
         desc = f"شاهد جميع مواسم وحلقات {label_ar} {t} ({ot} - {yr}) مترجم للعربية بجودة Full HD & 4K بتقييم {rt}/10 على 6 سيرفرات سريعة عبر سينمانا لايف: {item['description'][:150]}"
         kw = f"مشاهدة {label_ar} {t}, {label_ar} {ot} مترجم, جميع حلقات {t}, {ot} cinemana"
-        schema = [{
-            "@context": "https://schema.org",
-            "@type": "TVSeries",
-            "name": t,
-            "alternateName": ot,
-            "datePublished": yr,
-            "image": [item["poster"], item["backdrop"]],
-            "description": item["description"],
-            "aggregateRating": {"@type": "AggregateRating", "ratingValue": rt, "bestRating": "10", "ratingCount": "18200"}
-        }]
+        schema = [
+            {
+                "@context": "https://schema.org",
+                "@type": "TVSeries",
+                "name": t,
+                "alternateName": ot,
+                "datePublished": yr,
+                "image": [item["poster"], item["backdrop"]],
+                "description": item["description"],
+                "aggregateRating": {"@type": "AggregateRating", "ratingValue": rt, "bestRating": "10", "ratingCount": "18200"}
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "سينمانا لايف", "item": f"{base_url}/"},
+                    {"@type": "ListItem", "position": 2, "name": "المسلسلات والأنمي", "item": f"{base_url}/series"},
+                    {"@type": "ListItem", "position": 3, "name": f"{t} ({ot})", "item": f"{base_url}{canonical}"}
+                ]
+            }
+        ]
         if ep_carousel_elements:
             schema.append({"@context": "https://schema.org", "@type": "ItemList", "itemListElement": ep_carousel_elements})
         og_target = item["poster"]
+
+    ep_links_ssr = "".join([
+        f'<li><a href="{e["url"]}">الموسم {season_num} الحلقة {e["episode"]}: {e["name"]} ({e["en_name"]})</a> — {e.get("overview", "")[:90]}</li>'
+        for e in (item.get("season_episodes") or [])[:30]
+    ])
+    article_html = f"""
+    <article class="ssr-crawler-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+      <h1>{title}</h1>
+      <p>{desc}</p>
+      <ul>{ep_links_ssr}</ul>
+    </article>
+    """
 
     boot = {
         "page": "vod_detail",
@@ -1119,57 +1288,83 @@ def series_detail_seo_page(slug, season_num=1, episode_slug=""):
         "episode": int(ep_num),
         "auto_play_vod": auto_play
     }
-    return render_seo_page(title, desc, kw, canonical, schema, "", boot, og_image=og_target)
+    return render_seo_page(title, desc, kw, canonical, schema, article_html, boot, og_image=og_target)
 
 
-# Legacy fallback redirect support
+# Legacy /watch/... routes now do a permanent 301 Redirect to the clean canonical URL (/movie/slug or /series/slug)
 @app.route("/watch/<media_type>/<item_id>")
 @app.route("/watch/<media_type>/<item_id>/<path:slug>")
 def watch_vod_legacy_page(media_type, item_id, slug=""):
-    if media_type == "movie":
-        return movie_detail_seo_page(item_id)
-    return series_detail_seo_page(item_id, 1, "")
+    base_url = get_canonical_base()
+    item = fetch_vod_detail("movie" if media_type == "movie" else "series", item_id)
+    if not item:
+        return render_404_seo_page("العرض غير موجود")
+    return Response("", status=301, headers={"Location": f"{base_url}{item['url']}"})
 
 
 # --- LEGAL & STATIC FOOTER PAGES (/privacy, /terms, /dmca, /contact) ---
 
 @app.route("/privacy")
 def privacy_page():
+    ssr_body = """
+    <section class="seo-banner-card">
+      <h1>سياسة الخصوصية وحماية البيانات في سينمانا لايف (Cinemana Live)</h1>
+      <p>نحن في منصة سينمانا لايف نلتزم بحماية خصوصية جميع الزوار وعدم جمع أي بيانات شخصية حساسة أثناء تصفح ومشاهدة الأفلام والمسلسلات والبث المباشر.</p>
+    </section>
+    """
     return render_seo_page(
         "سياسة الخصوصية (Privacy Policy) | سينمانا لايف Cinemana Live",
         "تعرف على سياسة الخصوصية وحماية بيانات الزوار في منصة سينمانا لايف (Cinemana Live).",
         "سياسة الخصوصية, سينمانا لايف, privacy policy cinemana live",
-        "/privacy", [], "", {"page": "legal", "legal_tab": "privacy"}
+        "/privacy", [], ssr_body, {"page": "legal", "legal_tab": "privacy"}
     )
 
 
 @app.route("/terms")
 def terms_page():
+    ssr_body = """
+    <section class="seo-banner-card">
+      <h1>شروط وأحكام الاستخدام لمنصة سينمانا لايف (Cinemana Live)</h1>
+      <p>جميع خدمات البث المباشر والمكتبة الترفيهية للأفلام والمسلسلات والأنمي متاحة للاستخدام الشخصي المجاني وفق شروط الاستخدام القياسية.</p>
+    </section>
+    """
     return render_seo_page(
         "شروط الاستخدام (Terms of Use) | سينمانا لايف Cinemana Live",
         "شروط وأحكام استخدام منصة سينمانا لايف للبث المباشر والمحتوى الترفيهي.",
         "شروط الاستخدام, الأحكام والشروط, سينمانا لايف",
-        "/terms", [], "", {"page": "legal", "legal_tab": "terms"}
+        "/terms", [], ssr_body, {"page": "legal", "legal_tab": "terms"}
     )
 
 
 @app.route("/dmca")
 def dmca_page():
+    ssr_body = """
+    <section class="seo-banner-card">
+      <h1>حقوق الملكية الفكرية وإخلاء المسؤولية القانونية (DMCA)</h1>
+      <p>موقع سينمانا لايف يحترم حقوق الملكية الفكرية (DMCA) ولا يقوم باستضافة أي ملفات محمية على خوادمه الخاصة بل يعتمد على الفهرسة والتضمين القياسي.</p>
+    </section>
+    """
     return render_seo_page(
         "حقوق الملكية الفكرية وإخلاء المسؤولية (DMCA) | سينمانا لايف",
         "بيان حقوق الملكية الفكرية (DMCA) وإخلاء المسؤولية القانونية لمنصة سينمانا لايف.",
         "حقوق الملكية, DMCA, إخلاء المسؤولية, سينمانا لايف",
-        "/dmca", [], "", {"page": "legal", "legal_tab": "dmca"}
+        "/dmca", [], ssr_body, {"page": "legal", "legal_tab": "dmca"}
     )
 
 
 @app.route("/contact")
 def contact_page():
+    ssr_body = """
+    <section class="seo-banner-card">
+      <h1>اتصل بنا — فريق دعم وإدارة سينمانا لايف (Cinemana Live)</h1>
+      <p>تواصل مع فريق الدعم الفني والإدارة عبر البريد الإلكتروني الرسمي support@cinemana.live و dmca@cinemana.live.</p>
+    </section>
+    """
     return render_seo_page(
         "اتصل بنا (Contact Us) | سينمانا لايف Cinemana Live",
         "تواصل مع فريق إدارة ودعم منصة سينمانا لايف (Cinemana Live).",
         "اتصل بنا, دعم سينمانا لايف, contact cinemana live",
-        "/contact", [], "", {"page": "legal", "legal_tab": "contact"}
+        "/contact", [], ssr_body, {"page": "legal", "legal_tab": "contact"}
     )
 
 
@@ -1190,7 +1385,7 @@ def match_seo_page(game_id, slug=""):
             pass
 
     if not target_Match:
-        return index()
+        return render_404_seo_page("المباراة غير موجودة")
 
     h = target_Match["home_name"]
     a = target_Match["away_name"]
@@ -1202,12 +1397,12 @@ def match_seo_page(game_id, slug=""):
 
     title = f"مشاهدة مباراة {h} ضد {a} بث مباشر اليوم ({comp}) | سينمانا لايف"
     desc = (
-        f"بث مباشر مشاهدة مباراة {h} و {a} اليوم في بطولة {comp} عبر قناة {ch_name} بتعليق {comm} "
+        f"بث مباشر مشاهدة مباراة {h} و {a} اليوم في بطولة {comp} بتعليق {comm} "
         f"الساعة {stime} بتوقيت بغداد ومكة المكرمة بجودة 4K و FHD بدون تقطيع على سينمانا لايف Cinemana Live."
     )
     kw = (
         f"مشاهدة مباراة {h} و {a}, بث مباشر {h} ضد {a}, مباراة {h} اليوم, مباراة {a} اليوم, "
-        f"{comp} بث مباشر, قناة {ch_name} بث مباشر, سينمانا لايف, cinemana live"
+        f"{comp} بث مباشر, سينمانا لايف, cinemana live"
     )
 
     schema = [
@@ -1231,7 +1426,7 @@ def match_seo_page(game_id, slug=""):
       <p>
         يقدم لكم موقع <strong>سينمانا لايف (Cinemana Live)</strong> البث المباشر لمباراة <strong>{h}</strong> أمام نظيره <strong>{a}</strong>
         ضمن منافسات بطولة <strong>{comp}</strong>. تنطلق صافرة بداية اللقاء اليوم <strong>{sdate}</strong> في تمام الساعة <strong>{stime}</strong> بتوقيت بغداد ومكة المكرمة،
-        وتنقل المباراة عبر قناة <strong>{ch_name} ({target_Match['channel_quality']})</strong> بصوت المعلق <strong>{comm}</strong>.
+        بدقة <strong>{target_Match['channel_quality']}</strong> بصوت المعلق <strong>{comm}</strong>.
       </p>
     </section>
     """
@@ -1250,7 +1445,7 @@ def match_seo_page(game_id, slug=""):
 def league_seo_page(comp_id, slug=""):
     lg = LEAGUES_BY_ID.get(str(comp_id))
     if not lg:
-        return index()
+        return render_404_seo_page("البطولة غير موجودة")
 
     name = lg["name"]
     title = f"جدول ترتيب ومباريات {name} بث مباشر اليوم | سينمانا لايف Cinemana Live"
@@ -1262,7 +1457,7 @@ def league_seo_page(comp_id, slug=""):
       <div class="seo-banner-badge">{lg['badge']} القسم الخاص بالبطولة</div>
       <h1>مباريات وجدول ترتيب {name} بث مباشر</h1>
       <p>
-        {desc} تابع جميع مواعيد المباريات والنتائج الفورية وترتيب الفرق والنقاط في <strong>{name}</strong> مع البث الحي عبر قنوات beIN Sports 4K & FHD.
+        {desc} تابع جميع مواعيد المباريات والنتائج الفورية وترتيب الفرق والنقاط في <strong>{name}</strong> مع البث الحي بدقة 4K & FHD.
       </p>
     </section>
     """
@@ -1275,13 +1470,13 @@ def channel_seo_page(channel_id):
     db = load_db()
     ch = next((c for c in db.get("channels", DEFAULT_CHANNELS) if c["id"] == channel_id), None)
     if not ch:
-        return index()
+        return render_404_seo_page("القناة غير موجودة")
 
     cname = ch["name"]
     cqual = ch["quality"]
     title = f"بث مباشر قناة {cname} ({cqual}) بدون تقطيع 24 ساعة | سينمانا لايف"
     desc = f"مشاهدة قناة {cname} بث مباشر بجودة {cqual} بدون تقطيع مجاناً على الجوال والكمبيوتر لنقل أهم المباريات العالمية والأوروبية عبر سينمانا لايف Cinemana Live."
-    kw = f"قناة {cname} بث مباشر, مشاهدة {cname} بدون تقطيع, {cname} live, بث مباشر بين سبورت {ch['num']}, سينمانا لايف"
+    kw = f"قناة {cname} بث مباشر, مشاهدة {cname} بدون تقطيع, {cname} live, سينمانا لايف"
 
     article_html = f"""
     <section class="seo-banner-card">
@@ -1298,18 +1493,15 @@ def channel_seo_page(channel_id):
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    base_url = request.host_url.rstrip("/")
-    if request.headers.get("X-Forwarded-Proto") == "https" and base_url.startswith("http://"):
-        base_url = "https://" + base_url[len("http://"):]
-
+    base_url = get_canonical_base()
     now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    urls = [
+    raw_urls = [
         (f"{base_url}/", "1.0", "always"),
-        (f"{base_url}/matches", "0.95", "always"),
-        (f"{base_url}/channels", "0.95", "hourly"),
         (f"{base_url}/movies", "0.95", "daily"),
         (f"{base_url}/series", "0.95", "daily"),
         (f"{base_url}/anime", "0.95", "daily"),
+        (f"{base_url}/matches", "0.95", "always"),
+        (f"{base_url}/channels", "0.90", "hourly"),
         (f"{base_url}/standings", "0.90", "hourly"),
         (f"{base_url}/leagues", "0.90", "daily"),
         (f"{base_url}/privacy", "0.60", "monthly"),
@@ -1319,20 +1511,20 @@ def sitemap_xml():
     ]
 
     for ch in DEFAULT_CHANNELS:
-        urls.append((f"{base_url}/channel/{ch['id']}", "0.9", "hourly"))
+        raw_urls.append((f"{base_url}/channel/{ch['id']}", "0.85", "hourly"))
 
     for lg in LEAGUES:
-        urls.append((f"{base_url}/league/{lg['id']}/{urllib.parse.quote(lg['slug'])}", "0.9", "hourly"))
+        raw_urls.append((f"{base_url}/league/{lg['id']}/{urllib.parse.quote(lg['slug'])}", "0.85", "hourly"))
 
-    seen_ids = set()
-    for offset in (0, 1, -1):
+    seen_match_ids = set()
+    for offset in (0, 1):
         try:
             _, matches = fetch_matches_list(date_offset=offset)
-            for m in matches:
-                if m["id"] not in seen_ids:
-                    seen_ids.add(m["id"])
+            for m in matches[:40]:
+                if m["id"] not in seen_match_ids:
+                    seen_match_ids.add(m["id"])
                     encoded_slug = urllib.parse.quote(m["slug"])
-                    urls.append((f"{base_url}/match/{m['id']}/{encoded_slug}", "0.85", "hourly"))
+                    raw_urls.append((f"{base_url}/match/{m['id']}/{encoded_slug}", "0.80", "hourly"))
         except Exception:
             pass
 
@@ -1340,17 +1532,25 @@ def sitemap_xml():
         try:
             vod_items = fetch_vod_catalog(category=cat)
             for v in vod_items[:35]:
-                urls.append((f"{base_url}{v['url']}", "0.90", "weekly"))
+                raw_urls.append((f"{base_url}{v['url']}", "0.90", "weekly"))
                 if v["media_type"] == "series":
-                    urls.append((f"{base_url}/series/{v['slug']}/season-1", "0.85", "weekly"))
-                    urls.append((f"{base_url}/series/{v['slug']}/season-1/episode-1-pilot", "0.85", "weekly"))
-                    urls.append((f"{base_url}/series/{v['slug']}/season-1/episode-2", "0.80", "weekly"))
+                    raw_urls.append((f"{base_url}/series/{v['slug']}/season-1", "0.85", "weekly"))
+                    raw_urls.append((f"{base_url}/series/{v['slug']}/season-1/episode-1-pilot", "0.85", "weekly"))
+                    raw_urls.append((f"{base_url}/series/{v['slug']}/season-1/episode-2", "0.80", "weekly"))
         except Exception:
             pass
 
+    # Strictly deduplicate URLs while preserving order so Google Search Console never flags duplicate <loc> entries
+    deduped_urls = []
+    seen_locs = set()
+    for u, prio, freq in raw_urls:
+        if u not in seen_locs:
+            seen_locs.add(u)
+            deduped_urls.append((u, prio, freq))
+
     xml_items = "\n".join([
         f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{now_iso}</lastmod>\n    <changefreq>{freq}</changefreq>\n    <priority>{prio}</priority>\n  </url>"
-        for u, prio, freq in urls
+        for u, prio, freq in deduped_urls
     ])
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -1361,11 +1561,11 @@ def sitemap_xml():
 
 @app.route("/robots.txt")
 def robots_txt():
-    base_url = request.host_url.rstrip("/")
-    if request.headers.get("X-Forwarded-Proto") == "https" and base_url.startswith("http://"):
-        base_url = "https://" + base_url[len("http://"):]
+    base_url = get_canonical_base()
     txt = f"""User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /hls/
 Sitemap: {base_url}/sitemap.xml
 """
     return Response(txt, mimetype="text/plain; charset=utf-8")
