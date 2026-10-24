@@ -12,8 +12,8 @@
     :root {
       --bg-deep: #06080f;
       --bg-surface: #0d121f;
-      --bg-card: rgba(17, 24, 39, 0.78);
-      --bg-card-hover: rgba(24, 34, 56, 0.92);
+      --bg-card: rgba(17, 24, 39, 0.82);
+      --bg-card-hover: rgba(24, 34, 56, 0.95);
       --border: rgba(255, 255, 255, 0.08);
       --border-red: rgba(229, 9, 20, 0.45);
       --red: #e50914;
@@ -23,8 +23,6 @@
       --purple: #6d28d9;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --radius-lg: 20px;
-      --radius-md: 14px;
     }
 
     * {
@@ -38,9 +36,9 @@
     body {
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.14), transparent 32%),
-        radial-gradient(circle at 88% 15%, rgba(109, 40, 217, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 90%, rgba(229, 9, 20, 0.07), transparent 40%);
+        radial-gradient(circle at 10% 8%, rgba(229, 9, 20, 0.14), transparent 30%),
+        radial-gradient(circle at 88% 12%, rgba(109, 40, 217, 0.12), transparent 34%),
+        radial-gradient(circle at 50% 92%, rgba(229, 9, 20, 0.07), transparent 40%);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
@@ -55,43 +53,39 @@
       0%, 100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.65); transform: scale(1); }
       50% { box-shadow: 0 0 16px 5px rgba(229, 9, 20, 0.25); transform: scale(1.03); }
     }
-
     @keyframes dotBlink {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.35; transform: scale(0.8); }
     }
-
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     @keyframes spinRing {
       to { transform: rotate(360deg); }
     }
-
     @keyframes eqBar {
       0%, 100% { height: 5px; }
       50% { height: 16px; }
     }
 
-    /* --- NAVBAR --- */
+    /* --- TOP MULTI-PAGE NAVIGATION BAR --- */
     .navbar {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(6, 8, 15, 0.86);
-      backdrop-filter: blur(20px);
+      background: rgba(6, 8, 15, 0.9);
+      backdrop-filter: blur(22px);
       border-bottom: 1px solid var(--border);
-      padding: 0.85rem 1.5rem;
+      padding: 0.75rem 1.4rem;
     }
     .nav-container {
-      max-width: 1340px;
+      max-width: 1360px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 1.2rem;
       flex-wrap: wrap;
     }
     .brand {
@@ -114,9 +108,42 @@
     }
     .brand-icon svg { width: 24px; height: 24px; fill: #fff; }
     .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
-    .brand-title { font-size: 1.4rem; font-weight: 900; letter-spacing: 0.5px; }
+    .brand-title { font-size: 1.38rem; font-weight: 900; letter-spacing: 0.5px; }
     .brand-title span { color: var(--red); }
-    .brand-sub { font-size: 0.74rem; color: var(--text-muted); font-weight: 700; }
+    .brand-sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      padding: 0.32rem;
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+    .nav-link {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      font-weight: 800;
+      padding: 0.46rem 1.05rem;
+      border-radius: 10px;
+      transition: all 0.22s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-link.active {
+      background: linear-gradient(135deg, #e50914, #a3060e);
+      color: #fff;
+      box-shadow: 0 6px 18px var(--red-glow);
+    }
 
     .nav-actions {
       display: flex;
@@ -130,9 +157,9 @@
       background: rgba(229, 9, 20, 0.14);
       border: 1px solid var(--border-red);
       color: #ff6b72;
-      padding: 0.42rem 0.9rem;
+      padding: 0.42rem 0.95rem;
       border-radius: 99px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 800;
     }
     .live-dot {
@@ -142,31 +169,70 @@
       background: var(--red);
       animation: dotBlink 1.3s infinite;
     }
-    .btn-settings {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.48rem 1rem;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      transition: all 0.25s ease;
-    }
-    .btn-settings:hover {
-      background: rgba(229, 9, 20, 0.15);
-      border-color: var(--border-red);
-      transform: translateY(-2px);
-    }
 
     /* --- MAIN CONTAINER --- */
     .container {
-      max-width: 1340px;
+      max-width: 1360px;
       margin: 0 auto;
       padding: 1.4rem 1.2rem 4rem;
+    }
+
+    /* --- SSR SEO BANNER CARD --- */
+    .seo-banner-card {
+      background: linear-gradient(135deg, rgba(229, 9, 20, 0.14), rgba(15, 23, 42, 0.92));
+      border: 1px solid var(--border-red);
+      border-radius: 20px;
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.35s ease;
+    }
+    .seo-banner-badge {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 900;
+      padding: 0.22rem 0.7rem;
+      border-radius: 99px;
+      margin-bottom: 0.55rem;
+    }
+    .seo-banner-card h1 {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 0.45rem;
+    }
+    .seo-banner-card p {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.75;
+    }
+
+    /* --- PAGE HEADER BAR --- */
+    .page-title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-title-bar h2 {
+      font-size: 1.3rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .page-title-bar h2::before {
+      content: "";
+      width: 5px;
+      height: 22px;
+      background: var(--red);
+      border-radius: 99px;
+      display: inline-block;
     }
 
     /* --- 5 BEIN CHANNELS HERO DOCK --- */
@@ -182,7 +248,7 @@
       gap: 0.5rem;
     }
     .dock-title {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -265,20 +331,9 @@
       box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
       flex-shrink: 0;
     }
-    .bein-info {
-      display: flex;
-      flex-direction: column;
-    }
-    .bein-name {
-      font-weight: 900;
-      font-size: 0.95rem;
-      color: #fff;
-    }
-    .bein-meta {
-      font-size: 0.73rem;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
+    .bein-info { display: flex; flex-direction: column; }
+    .bein-name { font-weight: 900; font-size: 0.95rem; color: #fff; }
+    .bein-meta { font-size: 0.73rem; color: var(--text-muted); font-weight: 700; }
     .q-pill {
       display: inline-block;
       padding: 0.08rem 0.42rem;
@@ -349,21 +404,9 @@
       align-items: center;
       gap: 0.35rem;
     }
-    .np-title {
-      font-size: 1.05rem;
-      font-weight: 900;
-      color: #fff;
-    }
-    .np-sub {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-    .player-top-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+    .np-title { font-size: 1.05rem; font-weight: 900; color: #fff; }
+    .np-sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .player-top-actions { display: flex; align-items: center; gap: 0.5rem; }
     .btn-player-top {
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid var(--border);
@@ -412,11 +455,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       pointer-events: none;
     }
-    .player-watermark span {
-      font-size: 0.78rem;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-    }
+    .player-watermark span { font-size: 0.78rem; font-weight: 900; letter-spacing: 0.5px; }
     .player-watermark b { color: var(--red); }
 
     .player-overlay {
@@ -433,10 +472,7 @@
       padding: 1.5rem;
       transition: opacity 0.3s ease;
     }
-    .player-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    .player-overlay.hidden { opacity: 0; pointer-events: none; }
     .spinner-ring {
       width: 58px;
       height: 58px;
@@ -445,16 +481,8 @@
       border-top-color: var(--red);
       animation: spinRing 0.9s linear infinite;
     }
-    .overlay-title {
-      font-size: 1.15rem;
-      font-weight: 900;
-      color: #fff;
-    }
-    .overlay-sub {
-      font-size: 0.86rem;
-      color: var(--text-muted);
-      max-width: 440px;
-    }
+    .overlay-title { font-size: 1.15rem; font-weight: 900; color: #fff; }
+    .overlay-sub { font-size: 0.86rem; color: var(--text-muted); max-width: 440px; }
 
     .custom-controls {
       position: absolute;
@@ -470,11 +498,7 @@
       gap: 1rem;
       transition: opacity 0.25s ease;
     }
-    .ctrl-group {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-    }
+    .ctrl-group { display: flex; align-items: center; gap: 0.65rem; }
     .ctrl-btn {
       width: 38px;
       height: 38px;
@@ -494,11 +518,7 @@
       transform: scale(1.06);
     }
     .ctrl-btn svg { width: 18px; height: 18px; fill: currentColor; }
-    .vol-slider {
-      width: 82px;
-      accent-color: var(--red);
-      cursor: pointer;
-    }
+    .vol-slider { width: 82px; accent-color: var(--red); cursor: pointer; }
     .live-indicator-bar {
       display: flex;
       align-items: center;
@@ -641,16 +661,8 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       padding-bottom: 0.55rem;
     }
-    .mc-comp {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-    .mc-comp img {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
-    }
+    .mc-comp { display: flex; align-items: center; gap: 0.45rem; }
+    .mc-comp img { width: 20px; height: 20px; object-fit: contain; }
     .mc-status-badge {
       padding: 0.18rem 0.6rem;
       border-radius: 99px;
@@ -691,17 +703,8 @@
       transition: transform 0.25s ease;
     }
     .match-card:hover .team-logo-wrap { transform: scale(1.08); }
-    .team-logo-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    .team-name {
-      font-size: 0.9rem;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.25;
-    }
+    .team-logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+    .team-name { font-size: 0.9rem; font-weight: 800; color: #fff; line-height: 1.25; }
 
     .mc-center {
       display: flex;
@@ -768,6 +771,57 @@
       box-shadow: 0 8px 24px rgba(229, 9, 20, 0.5);
     }
 
+    /* --- DEDICATED CHANNELS DIRECTORY CARDS (/channels page) --- */
+    .channels-showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.1rem;
+      margin-bottom: 2rem;
+    }
+    .ch-showcase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: all 0.28s ease;
+      animation: fadeUp 0.35s ease;
+    }
+    .ch-showcase-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border-red);
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
+    }
+
+    /* --- DEDICATED LEAGUES DIRECTORY CARDS (/leagues page) --- */
+    .leagues-showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.1rem;
+      margin-bottom: 2rem;
+    }
+    .lg-showcase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.28s ease;
+      animation: fadeUp 0.35s ease;
+    }
+    .lg-showcase-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border-red);
+      background: var(--bg-card-hover);
+    }
+
     /* --- STANDINGS TABLE --- */
     .standings-wrap {
       background: var(--bg-card);
@@ -802,15 +856,11 @@
       text-align: right;
     }
     .st-team-cell img { width: 26px; height: 26px; object-fit: contain; }
-    .st-pts {
-      font-weight: 900;
-      color: var(--gold);
-      font-size: 0.96rem;
-    }
+    .st-pts { font-weight: 900; color: var(--gold); font-size: 0.96rem; }
 
     /* --- SEO INTERNAL LINKS HUB --- */
     .seo-hub-box {
-      margin-top: 2.8rem;
+      margin-top: 3rem;
       background: rgba(13, 18, 31, 0.82);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -838,63 +888,14 @@
       color: #fff;
       background: rgba(229, 9, 20, 0.14);
     }
-
-    /* --- ADMIN MODAL --- */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal-card {
-      background: #0d1322;
-      border: 1px solid var(--border-red);
-      border-radius: 20px;
-      width: 100%;
-      max-width: 680px;
-      max-height: 88vh;
-      overflow-y: auto;
-      padding: 1.5rem;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
-    }
-    .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.9rem;
-      margin-bottom: 1.1rem;
-    }
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      margin-bottom: 0.9rem;
-    }
-    .form-row label { font-size: 0.82rem; color: var(--text-muted); font-weight: 700; }
-    .form-row input {
-      background: #060911;
-      border: 1px solid var(--border);
-      color: #fff;
-      padding: 0.6rem 0.85rem;
-      border-radius: 10px;
-      font-size: 0.86rem;
-      direction: ltr;
-    }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
+  <!-- MULTI-PAGE NAVBAR -->
   <header class="navbar">
     <div class="nav-container">
-      <a href="/" class="brand" onclick="selectLeague('all'); return false;">
+      <a href="/" class="brand" onclick="navigateTo('/', 'home'); return false;">
         <div class="brand-icon">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </div>
@@ -904,14 +905,19 @@
         </div>
       </a>
 
+      <nav class="nav-links" id="mainNavLinks">
+        <a href="/" class="nav-link active" data-page="home" onclick="navigateTo('/', 'home'); return false;">🏠 الرئيسية</a>
+        <a href="/matches" class="nav-link" data-page="matches" onclick="navigateTo('/matches', 'matches'); return false;">⚽ جدول المباريات</a>
+        <a href="/channels" class="nav-link" data-page="channels" onclick="navigateTo('/channels', 'channels'); return false;">📺 القنوات المباشرة</a>
+        <a href="/standings" class="nav-link" data-page="standings" onclick="navigateTo('/standings', 'standings'); return false;">🏆 ترتيب الدوريات</a>
+        <a href="/leagues" class="nav-link" data-page="leagues" onclick="navigateTo('/leagues', 'leagues'); return false;">🌍 البطولات</a>
+      </nav>
+
       <div class="nav-actions">
         <div class="live-pill">
           <span class="live-dot"></span>
-          <span id="liveCountBadge">5 قنوات بث مباشر</span>
+          <span id="liveCountBadge">بث مباشر 4K & FHD</span>
         </div>
-        <button class="btn-settings" onclick="openAdminModal()">
-          ⚙️ إعدادات الـ Restream
-        </button>
       </div>
     </div>
   </header>
@@ -919,18 +925,20 @@
   <main class="container">
 
     <!-- SSR SEO DYNAMIC ARTICLE BLOCK -->
-    <!-- __SEO_ARTICLE__ -->
+    <div id="ssrArticleSlot">
+      <!-- __SEO_ARTICLE__ -->
+    </div>
 
-    <!-- 5 BEIN SPORTS CHANNELS HERO BAR -->
-    <section class="channels-dock-wrap">
+    <!-- 5 BEIN SPORTS CHANNELS QUICK BAR -->
+    <section class="channels-dock-wrap" id="topChannelsDock">
       <div class="dock-header">
         <div class="dock-title">
           <span></span>
-          قنوات البث المباشر الحصرية (2 قنوات 4K • 2 قنوات Full HD • قناة 720p HD)
+          البث المباشر للقنوات الرياضية (beIN SPORTS 1 - 5 • 4K & FHD)
         </div>
-        <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">
-          كل قناة مربوطة بحساب IPTV مستقل بدون تقطيع
-        </div>
+        <a href="/channels" onclick="navigateTo('/channels', 'channels'); return false;" style="font-size: 0.8rem; color: #ff5b64; text-decoration:none; font-weight: 800;">
+          عرض دليل القنوات الكامل ←
+        </a>
       </div>
       <div class="bein-grid" id="beinGrid"></div>
     </section>
@@ -941,15 +949,15 @@
         <div class="now-playing-info">
           <div class="np-badge">
             <span class="live-dot" style="background:#fff;"></span>
-            LIVE RESTREAM
+            بث مباشر
           </div>
           <div>
             <div class="np-title" id="npChannelName">beIN Sports 1 4K</div>
-            <div class="np-sub" id="npMatchTitle">اختر قناة أو مباراة لبدء البث المباشر</div>
+            <div class="np-sub" id="npMatchTitle">اختر قناة أو مباراة لبدء المشاهدة المباشرة</div>
           </div>
         </div>
         <div class="player-top-actions">
-          <button class="btn-player-top" onclick="reloadCurrentStream()">🔄 تحديث البث</button>
+          <button class="btn-player-top" onclick="reloadCurrentStream()">🔄 تحديث الإشارة</button>
           <button class="btn-player-top" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
         </div>
       </div>
@@ -964,8 +972,8 @@
         <!-- Status / Loading Overlay -->
         <div class="player-overlay" id="playerOverlay">
           <div class="spinner-ring" id="overlaySpinner" style="display:none;"></div>
-          <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الذكي (4K & FHD)</div>
-          <div class="overlay-sub" id="overlaySub">اضغط على أي قناة من قنوات beIN Sports الخمسة بالأعلى أو اضغط "شاهد البث" أمام أي مباراة</div>
+          <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الرياضي (4K & FHD)</div>
+          <div class="overlay-sub" id="overlaySub">اضغط على أي قناة من قنوات beIN Sports الخمسة بالأعلى أو اضغط "شاهد المباراة" أمام أي لقاء</div>
           <button class="btn-watch-match" id="overlayPlayBtn" onclick="playChannel('bein1')" style="margin-top:0.5rem; padding: 0.65rem 1.4rem; font-size:0.9rem;">
             ▶ تشغيل beIN Sports 1 4K الآن
           </button>
@@ -999,32 +1007,37 @@
       </div>
     </section>
 
-    <!-- LEAGUES BAR -->
-    <nav class="leagues-bar" id="leaguesBar"></nav>
+    <!-- VIEW 1: MATCHES & LEAGUES FILTER VIEW -->
+    <div id="viewMatchesContainer">
+      <nav class="leagues-bar" id="leaguesBar"></nav>
 
-    <!-- TOOLBAR -->
-    <section class="toolbar">
-      <div class="filter-group" id="dateFiltersGroup">
-        <button class="filter-btn active" data-offset="0" onclick="setDateOffset(0, this)">مباريات اليوم</button>
-        <button class="filter-btn" data-offset="live" onclick="setLiveOnly(this)">🔴 مباشر الآن</button>
-        <button class="filter-btn" data-offset="1" onclick="setDateOffset(1, this)">مباريات الغد</button>
-        <button class="filter-btn" data-offset="-1" onclick="setDateOffset(-1, this)">نتائج الأمس</button>
-      </div>
+      <section class="toolbar" id="matchesToolbar">
+        <div class="filter-group" id="dateFiltersGroup">
+          <button class="filter-btn active" data-offset="0" onclick="setDateOffset(0, this)">مباريات اليوم</button>
+          <button class="filter-btn" data-offset="live" onclick="setLiveOnly(this)">🔴 مباشر الآن</button>
+          <button class="filter-btn" data-offset="1" onclick="setDateOffset(1, this)">مباريات الغد</button>
+          <button class="filter-btn" data-offset="-1" onclick="setDateOffset(-1, this)">نتائج الأمس</button>
+        </div>
 
-      <div class="filter-group" id="leagueSubTabs" style="display:none;">
-        <button class="filter-btn active" id="tabLeagueMatches" onclick="switchLeagueTab('matches')">⚽ مباريات البطولة</button>
-        <button class="filter-btn" id="tabLeagueStandings" onclick="switchLeagueTab('standings')">🏆 جدول الترتيب والنقاط</button>
-      </div>
+        <div class="filter-group" id="leagueSubTabs" style="display:none;">
+          <button class="filter-btn active" id="tabLeagueMatches" onclick="switchLeagueTab('matches')">⚽ مباريات البطولة</button>
+          <button class="filter-btn" id="tabLeagueStandings" onclick="switchLeagueTab('standings')">🏆 جدول الترتيب والنقاط</button>
+        </div>
 
-      <input type="text" class="search-box" id="searchInput" placeholder="🔍 ابحث عن فريق أو بطولة..." oninput="renderMatches()" />
-    </section>
+        <input type="text" class="search-box" id="searchInput" placeholder="🔍 ابحث عن فريق أو بطولة..." oninput="renderMatches()" />
+      </section>
 
-    <!-- MATCHES / STANDINGS CONTAINER -->
-    <section id="matchesSection">
-      <div class="matches-grid" id="matchesGrid"></div>
-    </section>
+      <section id="matchesSection">
+        <div class="matches-grid" id="matchesGrid"></div>
+      </section>
+    </div>
 
+    <!-- VIEW 2: STANDINGS PAGE VIEW -->
     <section id="standingsSection" style="display:none;">
+      <div class="page-title-bar" id="standingsHeaderBar">
+        <h2 id="standingsTitleText">جدول ترتيب البطولة</h2>
+      </div>
+      <nav class="leagues-bar" id="standingsLeaguesBar" style="display:none;"></nav>
       <div class="standings-wrap">
         <table class="standings-table">
           <thead>
@@ -1046,41 +1059,40 @@
       </div>
     </section>
 
-    <!-- SEO PROGRAMMATIC ARCHIVE HUB (Helps Google crawl all matches, leagues & channels) -->
+    <!-- VIEW 3: DEDICATED CHANNELS PAGE (/channels) -->
+    <section id="channelsDirectorySection" style="display:none;">
+      <div class="page-title-bar">
+        <h2>دليل القنوات الرياضية المباشرة (beIN Sports 1 - 5)</h2>
+      </div>
+      <div class="channels-showcase-grid" id="channelsShowcaseGrid"></div>
+    </section>
+
+    <!-- VIEW 4: DEDICATED LEAGUES DIRECTORY PAGE (/leagues) -->
+    <section id="leaguesDirectorySection" style="display:none;">
+      <div class="page-title-bar">
+        <h2>أقسام البطولات والدوريات العالمية والعربية</h2>
+      </div>
+      <div class="leagues-showcase-grid" id="leaguesShowcaseGrid"></div>
+    </section>
+
+    <!-- SEO PROGRAMMATIC ARCHIVE HUB -->
     <footer class="seo-hub-box">
-      <h2 style="font-size:1.1rem; font-weight:900; color:#fff; margin-bottom:0.4rem;">
-        🌐 دليل سينمانا لايف (Cinemana Live) للبث المباشر للمباريات والدوريات العالمية
+      <h2 style="font-size:1.08rem; font-weight:900; color:#fff; margin-bottom:0.4rem;">
+        🌐 سينمانا لايف (Cinemana Live) - البث المباشر للمباريات وجداول ترتيب الدوريات
       </h2>
       <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.7;">
-        موقع <strong>سينمانا لايف</strong> يوفر خدمة البث المباشر لمباريات اليوم والغد بدون تقطيع عبر 5 قنوات beIN Sports مخصصة (قناتين بدقة 4K Ultra HD، قناتين بدقة 1080p Full HD، وقناة بدقة 720p HD لتوفير البيانات)، مع تحديث لحظي لنتائج المباريات وجداول ترتيب الدوريات الأوروبية والعربية.
+        منصة <strong>سينمانا لايف</strong> الرياضية تقدم تغطية شاملة ومباشرة لأهم مباريات اليوم والغد بجودات متعددة (4K Ultra HD و Full HD 1080p و 720p HD) مع تحديث فوري للنتائج وجداول ترتيب دوري أبطال أوروبا، الدوري الإنجليزي الممتاز، الدوري الإسباني، الدوري الإيطالي، ودوري نجوم العراق.
       </p>
       <div class="seo-links-grid" id="seoLinksHub"></div>
     </footer>
 
   </main>
 
-  <!-- ADMIN RESTREAM MODAL -->
-  <div class="modal-backdrop" id="adminModal">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3 style="font-weight:900;">⚙️ إعدادات الـ 5 حسابات & الـ Restream</h3>
-        <button class="btn-player-top" onclick="closeAdminModal()">✕ إغلاق</button>
-      </div>
-      <div class="form-row">
-        <label>عدد القنوات المسموح تشغيلها بنفس اللحظة (5 حسابات مستقلة = 5 قنوات):</label>
-        <input type="number" id="admMaxConn" min="1" max="10" value="5" />
-      </div>
-      <div id="admChannelsList"></div>
-      <button class="btn-watch-match" style="width:100%; justify-content:center; padding:0.75rem; margin-top:0.8rem;" onclick="saveAdminConfig()">
-        💾 حفظ الإعدادات وتحديث السيرفر
-      </button>
-    </div>
-  </div>
-
   <script>
     let CHANNELS = [];
     let LEAGUES = [];
     let ALL_MATCHES = [];
+    let currentPage = 'home';
     let currentLeague = 'all';
     let currentDateOffset = 0;
     let liveOnlyFilter = false;
@@ -1098,16 +1110,15 @@
         LEAGUES = data.leagues || [];
         renderBeinDock();
         renderLeaguesBar();
+        renderChannelsDirectory();
+        renderLeaguesDirectory();
 
         const boot = window.__BOOT_STATE__ || {};
-        if (boot.initial_league) {
-          await selectLeague(boot.initial_league);
-        } else {
-          await loadMatches();
-        }
-        if (boot.auto_channel) {
-          playChannel(boot.auto_channel, boot.match_title || '');
-        }
+        await applyBootState(boot);
+
+        window.addEventListener('popstate', () => {
+          handleUrlChange(window.location.pathname);
+        });
 
         setInterval(loadMatches, 30000);
       } catch (e) {
@@ -1115,10 +1126,97 @@
       }
     }
 
+    async function applyBootState(boot) {
+      const page = boot.page || 'home';
+      setActiveNav(page);
+
+      if (page === 'channels') {
+        showView('channels');
+        await loadMatches();
+      } else if (page === 'leagues') {
+        showView('leagues');
+        await loadMatches();
+      } else if (page === 'standings') {
+        currentLeague = boot.initial_league || '7';
+        showView('standings_full');
+        await loadStandings(currentLeague);
+        await loadMatches();
+      } else if (page === 'league_detail' && boot.initial_league) {
+        showView('matches');
+        await selectLeague(boot.initial_league, false);
+      } else {
+        showView('matches');
+        await loadMatches();
+      }
+
+      if (boot.auto_channel) {
+        playChannel(boot.auto_channel, boot.match_title || '', false);
+      }
+    }
+
+    async function navigateTo(path, pageType) {
+      window.history.pushState({}, '', path);
+      document.getElementById('ssrArticleSlot').innerHTML = '';
+      setActiveNav(pageType);
+
+      if (pageType === 'home') {
+        showView('matches');
+        document.getElementById('playerStage').style.display = 'block';
+        document.getElementById('topChannelsDock').style.display = 'block';
+        await selectLeague('all', false);
+      } else if (pageType === 'matches') {
+        showView('matches');
+        document.getElementById('playerStage').style.display = 'block';
+        document.getElementById('topChannelsDock').style.display = 'none';
+        await selectLeague('all', false);
+      } else if (pageType === 'channels') {
+        document.getElementById('playerStage').style.display = 'block';
+        document.getElementById('topChannelsDock').style.display = 'none';
+        showView('channels');
+      } else if (pageType === 'standings') {
+        document.getElementById('playerStage').style.display = 'none';
+        document.getElementById('topChannelsDock').style.display = 'none';
+        if (currentLeague === 'all') currentLeague = '7';
+        showView('standings_full');
+        renderStandingsLeaguePills();
+        await loadStandings(currentLeague);
+      } else if (pageType === 'leagues') {
+        document.getElementById('playerStage').style.display = 'none';
+        document.getElementById('topChannelsDock').style.display = 'none';
+        showView('leagues');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function handleUrlChange(pathname) {
+      if (pathname === '/matches') navigateTo('/matches', 'matches');
+      else if (pathname === '/channels') navigateTo('/channels', 'channels');
+      else if (pathname === '/standings') navigateTo('/standings', 'standings');
+      else if (pathname === '/leagues') navigateTo('/leagues', 'leagues');
+      else navigateTo('/', 'home');
+    }
+
+    function setActiveNav(pageType) {
+      currentPage = pageType;
+      document.querySelectorAll('#mainNavLinks .nav-link').forEach(a => {
+        const dp = a.getAttribute('data-page');
+        a.classList.toggle('active', dp === pageType || (pageType === 'league_detail' && dp === 'leagues'));
+      });
+    }
+
+    function showView(mode) {
+      document.getElementById('viewMatchesContainer').style.display = (mode === 'matches') ? 'block' : 'none';
+      document.getElementById('standingsSection').style.display = (mode === 'standings_full' || mode === 'standings_sub') ? 'block' : 'none';
+      document.getElementById('standingsLeaguesBar').style.display = (mode === 'standings_full') ? 'flex' : 'none';
+      document.getElementById('standingsHeaderBar').style.display = (mode === 'standings_full') ? 'flex' : 'none';
+      document.getElementById('channelsDirectorySection').style.display = (mode === 'channels') ? 'block' : 'none';
+      document.getElementById('leaguesDirectorySection').style.display = (mode === 'leagues') ? 'block' : 'none';
+    }
+
     function renderBeinDock() {
       const grid = document.getElementById('beinGrid');
       grid.innerHTML = CHANNELS.map(ch => `
-        <a href="/channel/${ch.id}" class="bein-card ${ch.id === currentChannelId ? 'active' : ''}" id="card_${ch.id}" onclick="playChannel('${ch.id}'); return false;">
+        <a href="/channel/${ch.id}" class="bein-card ${ch.id === currentChannelId ? 'active' : ''}" onclick="playChannel('${ch.id}'); return false;">
           <div class="bein-left">
             <div class="bein-num-badge">${ch.num || ch.id.replace('bein','')}</div>
             <div class="bein-info">
@@ -1135,16 +1233,80 @@
       `).join('');
     }
 
+    function renderChannelsDirectory() {
+      const grid = document.getElementById('channelsShowcaseGrid');
+      if (!grid) return;
+      grid.innerHTML = CHANNELS.map(ch => `
+        <article class="ch-showcase-card">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <div class="bein-num-badge" style="width:48px; height:48px; font-size:1.35rem;">${ch.num}</div>
+              <div>
+                <h3 style="font-size:1.1rem; font-weight:900; color:#fff;">${ch.name}</h3>
+                <span class="q-pill" style="margin:0;">${ch.quality}</span>
+              </div>
+            </div>
+            <span class="live-pill" style="padding:0.25rem 0.65rem; font-size:0.72rem;">
+              <span class="live-dot"></span> مباشر 24/7
+            </span>
+          </div>
+          <p style="font-size:0.84rem; color:var(--text-muted); line-height:1.65;">
+            ${ch.desc || 'بث حي ومباشر على مدار الساعة لأهم البطولات العالمية والأوروبية.'}
+          </p>
+          <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); padding-top:0.8rem;">
+            <span style="font-size:0.78rem; color:#cbd5e1; font-weight:700;">🎙️ القناة الصوتية: ${ch.commentator}</span>
+            <a href="/channel/${ch.id}" class="btn-watch-match" onclick="playChannel('${ch.id}', 'البث المباشر لقناة ${ch.name}'); return false;">
+              ▶ تشغيل القناة
+            </a>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderLeaguesDirectory() {
+      const grid = document.getElementById('leaguesShowcaseGrid');
+      if (!grid) return;
+      grid.innerHTML = LEAGUES.map(lg => `
+        <a href="/league/${lg.id}/${lg.slug || ''}" class="lg-showcase-card" onclick="openLeagueFromDirectory('${lg.id}', '${lg.slug || ''}'); return false;">
+          <div style="display:flex; align-items:center; gap:0.85rem;">
+            <div style="font-size:2.1rem; background:rgba(255,255,255,0.04); width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center;">
+              ${lg.badge}
+            </div>
+            <div>
+              <h3 style="font-size:1.08rem; font-weight:900; color:#fff;">${lg.name}</h3>
+              <span style="font-size:0.76rem; color:var(--text-muted); font-weight:700;">${lg.country} • مباريات وجدول الترتيب</span>
+            </div>
+          </div>
+          <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.65;">
+            ${lg.seo_desc}
+          </p>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:0.75rem; font-size:0.8rem; color:#ff5b64; font-weight:800;">
+            <span>عرض المباريات والترتيب</span>
+            <span>←</span>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    async function openLeagueFromDirectory(leagueId, slug) {
+      window.history.pushState({}, '', `/league/${leagueId}/${slug}`);
+      document.getElementById('playerStage').style.display = 'block';
+      document.getElementById('topChannelsDock').style.display = 'block';
+      showView('matches');
+      await selectLeague(leagueId, false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function renderLeaguesBar() {
       const bar = document.getElementById('leaguesBar');
       let html = `
-        <a href="/" class="league-pill ${currentLeague === 'all' ? 'active' : ''}" onclick="selectLeague('all'); return false;">
+        <a href="/" class="league-pill ${currentLeague === 'all' ? 'active' : ''}" onclick="selectLeague('all', true); return false;">
           🔥 كل المباريات
         </a>
       `;
       for (const lg of LEAGUES) {
         html += `
-          <a href="/league/${lg.id}/${lg.slug || ''}" class="league-pill ${String(currentLeague) === String(lg.id) ? 'active' : ''}" onclick="selectLeague('${lg.id}'); return false;">
+          <a href="/league/${lg.id}/${lg.slug || ''}" class="league-pill ${String(currentLeague) === String(lg.id) ? 'active' : ''}" onclick="selectLeague('${lg.id}', true); return false;">
             <span>${lg.badge}</span>
             <span>${lg.short}</span>
           </a>
@@ -1153,11 +1315,40 @@
       bar.innerHTML = html;
     }
 
-    async function selectLeague(leagueId) {
+    function renderStandingsLeaguePills() {
+      const bar = document.getElementById('standingsLeaguesBar');
+      bar.innerHTML = LEAGUES.map(lg => `
+        <button class="league-pill ${String(currentLeague) === String(lg.id) ? 'active' : ''}" onclick="selectStandingsLeague('${lg.id}')">
+          <span>${lg.badge}</span>
+          <span>${lg.short}</span>
+        </button>
+      `).join('');
+      const lgObj = LEAGUES.find(l => String(l.id) === String(currentLeague));
+      if (lgObj) {
+        document.getElementById('standingsTitleText').textContent = `جدول ترتيب ${lgObj.name}`;
+      }
+    }
+
+    async function selectStandingsLeague(leagueId) {
+      currentLeague = leagueId;
+      renderStandingsLeaguePills();
+      await loadStandings(leagueId);
+    }
+
+    async function selectLeague(leagueId, pushUrl = false) {
       currentLeague = leagueId;
       renderLeaguesBar();
       const dateGroup = document.getElementById('dateFiltersGroup');
       const subTabs = document.getElementById('leagueSubTabs');
+
+      if (pushUrl) {
+        if (leagueId === 'all') {
+          window.history.pushState({}, '', '/');
+        } else {
+          const lg = LEAGUES.find(l => String(l.id) === String(leagueId));
+          window.history.pushState({}, '', `/league/${leagueId}/${lg ? lg.slug : ''}`);
+        }
+      }
 
       if (leagueId === 'all') {
         dateGroup.style.display = 'flex';
@@ -1184,6 +1375,8 @@
       } else {
         document.getElementById('matchesSection').style.display = 'none';
         document.getElementById('standingsSection').style.display = 'block';
+        document.getElementById('standingsHeaderBar').style.display = 'none';
+        document.getElementById('standingsLeaguesBar').style.display = 'none';
         await loadStandings(currentLeague);
       }
     }
@@ -1206,14 +1399,14 @@
     async function loadMatches() {
       try {
         let url = `/api/matches?offset=${currentDateOffset}`;
-        if (currentLeague !== 'all') {
+        if (currentLeague !== 'all' && currentPage !== 'standings') {
           url = `/api/matches?competition_id=${currentLeague}`;
         }
         const res = await fetch(url);
         const data = await res.json();
         ALL_MATCHES = data.matches || [];
         const liveCount = data.live_count || 0;
-        document.getElementById('liveCountBadge').textContent = liveCount > 0 ? `${liveCount} مباريات جارية الآن` : '5 قنوات بث مباشر (4K & FHD)';
+        document.getElementById('liveCountBadge').textContent = liveCount > 0 ? `${liveCount} مباريات جارية الآن` : 'بث مباشر 4K & FHD';
         renderMatches();
         renderSeoLinksHub();
       } catch (e) {
@@ -1291,8 +1484,8 @@
                 <span>📺 القناة: <b>${m.channel_name}</b></span>
                 <span>🎙️ المعلق: <b>${m.commentator}</b></span>
               </div>
-              <a href="${matchUrl}" class="btn-watch-match" onclick="playChannel('${m.channel_id}', '${safeMatchTitle}'); return false;">
-                ▶ شاهد البث
+              <a href="${matchUrl}" class="btn-watch-match" onclick="openMatchStream('${matchUrl}', '${m.channel_id}', '${safeMatchTitle}'); return false;">
+                ▶ شاهد المباراة
               </a>
             </div>
           </article>
@@ -1300,9 +1493,22 @@
       }).join('');
     }
 
+    function openMatchStream(matchUrl, channelId, matchTitle) {
+      window.history.pushState({}, '', matchUrl);
+      document.getElementById('playerStage').style.display = 'block';
+      playChannel(channelId, matchTitle, true);
+    }
+
     function renderSeoLinksHub() {
       const hub = document.getElementById('seoLinksHub');
       if (!hub) return;
+      const pageLinks = [
+        `<a href="/" class="seo-link-chip">سينمانا لايف الرئيسية</a>`,
+        `<a href="/matches" class="seo-link-chip">جدول مباريات اليوم</a>`,
+        `<a href="/channels" class="seo-link-chip">القنوات الرياضية المباشرة</a>`,
+        `<a href="/standings" class="seo-link-chip">جداول ترتيب الدوريات</a>`,
+        `<a href="/leagues" class="seo-link-chip">البطولات العالمية</a>`
+      ];
       const channelLinks = CHANNELS.map(c =>
         `<a href="/channel/${c.id}" class="seo-link-chip">بث مباشر ${c.name} (${c.quality})</a>`
       );
@@ -1312,7 +1518,7 @@
       const matchLinks = ALL_MATCHES.slice(0, 24).map(m =>
         `<a href="${m.url || '/match/' + m.id}" class="seo-link-chip">مشاهدة مباراة ${m.home_name} و ${m.away_name} بث مباشر</a>`
       );
-      hub.innerHTML = [...channelLinks, ...leagueLinks, ...matchLinks].join('');
+      hub.innerHTML = [...pageLinks, ...channelLinks, ...leagueLinks, ...matchLinks].join('');
     }
 
     async function loadStandings(compId) {
@@ -1351,9 +1557,10 @@
     }
 
     /* --- CUSTOM HLS VIDEO PLAYER ENGINE --- */
-    async function playChannel(channelId, matchTitle = '') {
+    async function playChannel(channelId, matchTitle = '', scroll = true) {
       currentChannelId = channelId;
       renderBeinDock();
+      document.getElementById('playerStage').style.display = 'block';
 
       const ch = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
       document.getElementById('npChannelName').textContent = ch ? ch.name : channelId;
@@ -1370,9 +1577,11 @@
       spinner.style.display = 'block';
       playBtn.style.display = 'none';
       titleEl.textContent = `جاري تشغيل ${ch ? ch.name : ''} (${ch ? ch.quality : ''}) ...`;
-      subEl.textContent = 'يتم الآن سحب البث عبر خط الـ IPTV المخصص وتجهيزه بدون تقطيع';
+      subEl.textContent = 'يتم الآن الاتصال بالبث المباشر فائق الوضوح عبر سينمانا لايف';
 
-      document.getElementById('playerStage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (scroll) {
+        document.getElementById('playerStage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
 
       try {
         const res = await fetch(`/api/stream/${channelId}`);
@@ -1483,44 +1692,6 @@
       } else if (video.requestPictureInPicture) {
         video.requestPictureInPicture().catch(() => {});
       }
-    }
-
-    /* --- ADMIN MODAL --- */
-    async function openAdminModal() {
-      const res = await fetch('/api/admin/config');
-      const data = await res.json();
-      document.getElementById('admMaxConn').value = (data.iptv_panel && data.iptv_panel.max_connections) || 5;
-      const container = document.getElementById('admChannelsList');
-      container.innerHTML = (data.channels || []).map((ch, i) => `
-        <div class="form-row">
-          <label>${ch.name} (${ch.quality}) - الحساب المخصص [${ch.account_user || ''}]:</label>
-          <input type="text" id="ch_url_${i}" value="${ch.source_url}" />
-        </div>
-      `).join('');
-      document.getElementById('adminModal').classList.add('open');
-    }
-
-    function closeAdminModal() {
-      document.getElementById('adminModal').classList.remove('open');
-    }
-
-    async function saveAdminConfig() {
-      const maxConn = parseInt(document.getElementById('admMaxConn').value || '5', 10);
-      const updated = CHANNELS.map((ch, i) => ({
-        ...ch,
-        source_url: document.getElementById(`ch_url_${i}`).value.trim()
-      }));
-      await fetch('/api/admin/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          iptv_panel: { max_connections: maxConn },
-          channels: updated
-        })
-      });
-      CHANNELS = updated;
-      renderBeinDock();
-      closeAdminModal();
     }
 
     window.addEventListener('DOMContentLoaded', initApp);
