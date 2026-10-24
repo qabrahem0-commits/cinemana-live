@@ -1006,27 +1006,230 @@
     .st-team-cell img { width: 26px; height: 26px; object-fit: contain; }
     .st-pts { font-weight: 900; color: var(--gold); font-size: 0.96rem; }
 
-    /* --- SEO INTERNAL LINKS HUB --- */
-    .seo-hub-box {
-      margin-top: 3rem;
-      background: rgba(13, 18, 31, 0.82);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 1.5rem;
+    /* --- DEDICATED VOD DETAIL PAGE (/movie/slug, /series/slug, /series/slug/season-1/episode-1-pilot) --- */
+    .vod-detail-hero {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-size: cover;
+      background-position: center top;
+      margin-bottom: 1.6rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
     }
-    .seo-links-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .seo-link-chip {
-      background: rgba(255, 255, 255, 0.04);
+    .vod-detail-overlay {
+      background: linear-gradient(90deg, rgba(6, 8, 15, 0.96) 0%, rgba(6, 8, 15, 0.88) 55%, rgba(6, 8, 15, 0.72) 100%);
+      padding: 2.2rem;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .vod-detail-overlay { grid-template-columns: 1fr; text-align: center; padding: 1.4rem; }
+      .vod-detail-poster { margin: 0 auto; max-width: 190px; }
+    }
+    .vod-detail-poster {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+    }
+    .vod-detail-info { display: flex; flex-direction: column; gap: 0.9rem; }
+    .vod-detail-crumbs {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+    .vod-detail-crumbs a { color: #cbd5e1; text-decoration: none; }
+    .vod-detail-crumbs a:hover { color: var(--red); }
+    .vod-detail-title { font-size: clamp(1.45rem, 3vw, 2.3rem); font-weight: 900; color: #fff; line-height: 1.25; }
+    .vod-detail-orig { font-size: 0.95rem; color: var(--gold); font-weight: 800; direction: ltr; display: inline-block; }
+    .vod-detail-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+    .vod-meta-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0.28rem 0.75rem;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+    .vod-meta-pill.gold { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; }
+    .vod-detail-story {
+      font-size: 0.94rem;
+      color: #cbd5e1;
+      line-height: 1.8;
+      max-width: 820px;
+    }
+    .vod-cast-row {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .vod-cast-row b { color: #fff; }
+
+    /* Seasons & Episodes Grid */
+    .seasons-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding-bottom: 0.6rem;
+      margin-bottom: 1.2rem;
+    }
+    .season-tab-btn {
+      flex-shrink: 0;
+      background: var(--bg-card);
       border: 1px solid var(--border);
       color: #cbd5e1;
+      padding: 0.58rem 1.2rem;
+      border-radius: 13px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      cursor: pointer;
       text-decoration: none;
-      font-size: 0.76rem;
-      font-weight: 700;
-      padding: 0.35rem 0.75rem;
-      border-radius: 10px;
-      transition: all 0.2s;
+      transition: all 0.22s;
     }
-    .seo-link-chip:hover { border-color: var(--red); color: #fff; background: rgba(229, 9, 20, 0.14); }
+    .season-tab-btn:hover { border-color: rgba(255, 255, 255, 0.28); color: #fff; }
+    .season-tab-btn.active {
+      background: linear-gradient(135deg, #e50914, #990008);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 20px var(--red-glow);
+    }
+    .episodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.2rem;
+    }
+    .ep-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+    }
+    .ep-card:hover, .ep-card.active {
+      transform: translateY(-4px);
+      border-color: var(--red);
+      box-shadow: 0 12px 28px rgba(229, 9, 20, 0.22);
+      background: var(--bg-card-hover);
+    }
+    .ep-thumb-wrap {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #05070e;
+      overflow: hidden;
+    }
+    .ep-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+    .ep-card:hover .ep-thumb-wrap img { transform: scale(1.06); }
+    .ep-num-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(6, 8, 15, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #fff;
+      font-size: 0.74rem;
+      font-weight: 900;
+      padding: 0.2rem 0.6rem;
+      border-radius: 8px;
+    }
+    .ep-time-badge {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(229, 9, 20, 0.9);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+    }
+    .ep-body { padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    .ep-title { font-size: 0.9rem; font-weight: 800; color: #fff; }
+    .ep-sub { font-size: 0.75rem; color: var(--text-muted); direction: ltr; text-align: right; font-weight: 700; }
+    .ep-desc {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* --- LEGAL PAGES CARD (/privacy, /terms, /dmca, /contact) --- */
+    .legal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      line-height: 1.9;
+    }
+    .legal-card h1 { font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 1rem; }
+    .legal-card h3 { font-size: 1.08rem; font-weight: 800; color: var(--gold); margin: 1.2rem 0 0.4rem; }
+    .legal-card p { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.75rem; }
+
+    /* --- FIXED BOTTOM BAR (FOOTER BAR) --- */
+    body { padding-bottom: 64px; }
+    .fixed-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(6, 8, 15, 0.94);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+      padding: 0.65rem 1.25rem;
+      box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.6);
+    }
+    .bottom-bar-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .bottom-copy {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bottom-copy b { color: #fff; }
+    .bottom-links {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      flex-wrap: wrap;
+    }
+    .bottom-link {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 800;
+      transition: color 0.2s;
+    }
+    .bottom-link:hover { color: var(--red); }
   </style>
 </head>
 <body>
@@ -1071,11 +1274,11 @@
     </div>
 
     <!-- CINEMATIC HERO BILLBOARD (SHABAKATY / NETFLIX STYLE) -->
-    <section class="hero-billboard" id="heroBillboard" style="background-image: url('https://images.metahub.space/background/medium/tt15398776/img');">
+    <section class="hero-billboard" id="heroBillboard" style="background-image: url('https://image.tmdb.org/t/p/w1280/hoq8AUTtYowqmKWoYwhoAfkMpLr.jpg');">
       <div class="hero-content">
         <div class="hero-badges">
           <span class="hero-tag" id="heroTag">🔥 الأكثر مشاهدة على سينمانا لايف</span>
-          <span class="hero-imdb" id="heroImdb">⭐ IMDb 8.9 • 4K Ultra HD</span>
+          <span class="hero-imdb" id="heroImdb">⭐ TMDB 8.9 • 4K Ultra HD</span>
         </div>
         <h2 class="hero-title" id="heroTitle">منصة سينمانا لايف — البث المباشر للمباريات وأحدث الأفلام والمسلسلات</h2>
         <p class="hero-desc" id="heroDesc">
@@ -1106,8 +1309,8 @@
       <div class="bein-grid" id="beinGrid"></div>
     </section>
 
-    <!-- UNIVERSAL CINEMA STAGE (HANDLES BOTH LIVE HLS TV & 6-SERVER VOD EMBEDS) -->
-    <section class="player-stage" id="playerStage">
+    <!-- ON-DEMAND PLAYER STAGE (HIDDEN BY DEFAULT UNTIL USER CLICKS A CHANNEL, MATCH, MOVIE OR EPISODE!) -->
+    <section class="player-stage" id="playerStage" style="display:none;">
       <div class="player-topbar">
         <div class="now-playing-info">
           <div class="np-badge" id="npModeBadge">
@@ -1116,16 +1319,17 @@
           </div>
           <div>
             <div class="np-title" id="npChannelName">beIN Sports 1 4K</div>
-            <div class="np-sub" id="npMatchTitle">اختر قناة أو مباراة أو فيلماً لبدء المشاهدة الفورية</div>
+            <div class="np-sub" id="npMatchTitle">بث مباشر فائق الوضوح</div>
           </div>
         </div>
         <div class="player-top-actions">
           <button class="btn-player-top" id="btnReloadStream" onclick="reloadCurrentStream()">🔄 تحديث الإشارة</button>
           <button class="btn-player-top" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
+          <button class="btn-player-top" onclick="closePlayerStage()" style="background:rgba(229,9,20,0.2); border-color:rgba(229,9,20,0.45); color:#ff8086;">✕ إغلاق المشغل</button>
         </div>
       </div>
 
-      <!-- VOD 6-SERVERS & SEASON/EPISODE BAR (Appears when watching a Movie / Series / Anime) -->
+      <!-- VOD 6-SERVERS & SEASON/EPISODE BAR -->
       <div class="vod-servers-bar" id="vodServersBar">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
           <span style="font-size:0.8rem; font-weight:900; color:#e2e8f0;">⚡ اختر سيرفر المشاهدة (6 سيرفرات سريعة تدعم الترجمة):</span>
@@ -1150,9 +1354,9 @@
         <div class="player-overlay" id="playerOverlay">
           <div class="spinner-ring" id="overlaySpinner" style="display:none;"></div>
           <div class="overlay-title" id="overlayTitle">مشغل سينمانا لايف الذكي (4K & FHD)</div>
-          <div class="overlay-sub" id="overlaySub">اضغط على أي قناة من قنوات beIN Sports بالأعلى أو اختر أي مباراة أو فيلم أو مسلسل لبدء المشاهدة</div>
+          <div class="overlay-sub" id="overlaySub">جاري الاتصال بسيرفر البث...</div>
           <button class="btn-watch-match" id="overlayPlayBtn" onclick="playChannel('bein1')" style="margin-top:0.5rem; padding: 0.65rem 1.4rem; font-size:0.9rem;">
-            ▶ تشغيل beIN Sports 1 4K الآن
+            ▶ إعادة المحاولة
           </button>
         </div>
 
@@ -1181,6 +1385,45 @@
             </button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- DEDICATED MOVIE / SERIES / ANIME DETAIL PAGE (/movie/slug, /series/slug, /series/slug/season-1/episode-1-pilot) -->
+    <section id="vodDetailPageSection" style="display:none;">
+      <div class="vod-detail-hero" id="vodDetailHero">
+        <div class="vod-detail-overlay">
+          <img id="vodDetailPoster" class="vod-detail-poster" src="" alt="" />
+          <div class="vod-detail-info">
+            <div class="vod-detail-crumbs" id="vodDetailCrumbs"></div>
+            <div>
+              <h1 class="vod-detail-title" id="vodDetailTitle"></h1>
+              <div class="vod-detail-orig" id="vodDetailOrig"></div>
+            </div>
+            <div class="vod-detail-meta" id="vodDetailMeta"></div>
+            <p class="vod-detail-story" id="vodDetailStory"></p>
+            <div class="vod-cast-row" id="vodDetailCast"></div>
+            <div class="hero-btns" style="margin-top:0.5rem;">
+              <button class="btn-hero-primary" id="vodDetailPlayBtn" onclick="startPlayingCurrentDetail()">
+                ▶ تشغيل ومشاهدة الآن (6 سيرفرات FHD)
+              </button>
+              <a href="/movies" class="btn-hero-sec" id="vodDetailBackBtn">
+                ← العودة للمكتبة
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEASONS & EPISODES DIRECTORY (For Series & Anime) -->
+      <div id="vodSeasonsContainer" style="display:none;">
+        <div class="sec-head" style="margin-top:0.5rem;">
+          <div class="sec-title">
+            <span></span>
+            <b id="vodSeasonsHeading">المواسم والحلقات المتوفرة</b>
+          </div>
+        </div>
+        <div class="seasons-tabs-bar" id="vodSeasonsTabs"></div>
+        <div class="episodes-grid" id="vodEpisodesGrid"></div>
       </div>
     </section>
 
@@ -1225,7 +1468,7 @@
       <div class="sec-head">
         <div class="sec-title">
           <span></span>
-          🎬 أحدث الأفلام العالمية المترجمة (IMDb Top Movies)
+          🎬 أحدث الأفلام العالمية المترجمة
         </div>
         <a href="/movies" class="sec-more" onclick="navigateTo('/movies', 'movies'); return false;">
           عرض جميع الأفلام ←
@@ -1237,7 +1480,7 @@
       <div class="sec-head">
         <div class="sec-title">
           <span></span>
-          📺 أشهر المسلسلات الأجنبية والعالمية (IMDb Top Series)
+          📺 أشهر المسلسلات الأجنبية والعالمية
         </div>
         <a href="/series" class="sec-more" onclick="navigateTo('/series', 'series'); return false;">
           عرض جميع المسلسلات ←
@@ -1249,7 +1492,7 @@
       <div class="sec-head">
         <div class="sec-title">
           <span></span>
-          🔥 أحدث وأشهر الأنميات المترجمة (Top Anime)
+          🔥 أحدث وأشهر الأنميات المترجمة
         </div>
         <a href="/anime" class="sec-more" onclick="navigateTo('/anime', 'anime'); return false;">
           عرض جميع الأنميات ←
@@ -1277,7 +1520,7 @@
           <button class="filter-btn" onclick="filterVodGenre('Comedy', this)">كوميديا</button>
           <button class="filter-btn" onclick="filterVodGenre('Horror', this)">رعب</button>
         </div>
-        <input type="text" class="search-box" id="vodSearchInput" placeholder="🔍 ابحث في IMDb عن فيلم أو مسلسل أو أنمي..." oninput="debouncedVodSearch()" />
+        <input type="text" class="search-box" id="vodSearchInput" placeholder="🔍 ابحث عن فيلم أو مسلسل أو أنمي..." oninput="debouncedVodSearch()" />
       </div>
 
       <div class="vod-grid" id="vodCatalogGrid"></div>
@@ -1326,18 +1569,27 @@
       <div class="leagues-showcase-grid" id="leaguesShowcaseGrid"></div>
     </section>
 
-    <!-- SEO PROGRAMMATIC ARCHIVE HUB -->
-    <footer class="seo-hub-box">
-      <h2 style="font-size:1.08rem; font-weight:900; color:#fff; margin-bottom:0.4rem;">
-        🌐 سينمانا لايف (Cinemana Live) - البث المباشر للمباريات ومشاهدة الأفلام والمسلسلات والأنمي
-      </h2>
-      <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.7;">
-        منصة <strong>سينمانا لايف</strong> تجمع بين البث المباشر لأقوى المباريات العالمية بدقة 4K Ultra HD و Full HD على قنوات beIN Sports وبين أضخم مكتبة أفلام ومسلسلات وأنمي مترجم مرتبطة بقاعدة بيانات IMDb العالمية على 6 سيرفرات مشاهدة فورية.
-      </p>
-      <div class="seo-links-grid" id="seoLinksHub"></div>
-    </footer>
+    <!-- LEGAL & STATIC PAGES SECTION (/privacy, /terms, /dmca, /contact) -->
+    <section id="legalPageSection" style="display:none;">
+      <div class="legal-card" id="legalCardContent"></div>
+    </section>
 
   </main>
+
+  <!-- FIXED BOTTOM BAR (PRIVACY, TERMS, DMCA, COPYRIGHT) -->
+  <footer class="fixed-bottom-bar">
+    <div class="bottom-bar-inner">
+      <div class="bottom-copy">
+        <span>© 2026 <b>CINEMANA LIVE (سينمانا لايف)</b> — جميع الحقوق محفوظة</span>
+      </div>
+      <nav class="bottom-links">
+        <a href="/privacy" class="bottom-link" onclick="openLegalPage('privacy'); return false;">🔒 سياسة الخصوصية</a>
+        <a href="/terms" class="bottom-link" onclick="openLegalPage('terms'); return false;">📜 شروط الاستخدام</a>
+        <a href="/dmca" class="bottom-link" onclick="openLegalPage('dmca'); return false;">⚖️ حقوق الملكية (DMCA)</a>
+        <a href="/contact" class="bottom-link" onclick="openLegalPage('contact'); return false;">✉️ اتصل بنا</a>
+      </nav>
+    </div>
+  </footer>
 
   <script>
     let CHANNELS = [];
@@ -1358,7 +1610,7 @@
     let currentDateOffset = 0;
     let liveOnlyFilter = false;
     let currentLeagueSubTab = 'matches';
-    let currentChannelId = 'bein1';
+    let currentChannelId = '';
     let hlsInstance = null;
 
     const FALLBACK_LOGO = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 24 24' fill='none' stroke='%23e50914' stroke-width='2'><circle cx='12' cy='12' r='10'/><polygon points='12 6 14 10 18 11 15 14 16 18 12 16 8 18 9 14 6 11 10 10 12 6'/></svg>";
@@ -1374,7 +1626,6 @@
         renderChannelsDirectory();
         renderLeaguesDirectory();
 
-        // Load home VOD rows in parallel with matches
         loadHomeVodRows();
 
         const boot = window.__BOOT_STATE__ || {};
@@ -1404,9 +1655,7 @@
         renderVodGrid('homeMoviesGrid', HOME_MOVIES.slice(0, 12));
         renderVodGrid('homeSeriesGrid', HOME_SERIES.slice(0, 12));
         renderVodGrid('homeAnimeGrid', HOME_ANIME.slice(0, 12));
-        renderSeoLinksHub();
 
-        // Feature top movie in Hero Billboard if on home
         if (HOME_MOVIES.length > 0 && currentPage === 'home') {
           updateHeroBillboard(HOME_MOVIES[0]);
         }
@@ -1421,27 +1670,25 @@
       if (item.backdrop) {
         hero.style.backgroundImage = `url('${item.backdrop}')`;
       }
-      const vodId = item.tmdb_id || item.imdb_id;
       document.getElementById('heroImdb').textContent = `⭐ TMDB ${item.rating} • ${item.year} • 4K FHD`;
       document.getElementById('heroTitle').textContent = `مشاهدة ${item.title} (${item.year}) مترجم + بث مباريات اليوم 4K`;
       document.getElementById('heroDesc').textContent = item.description;
       const btn = document.getElementById('heroPrimaryBtn');
-      btn.textContent = `▶ مشاهدة ${item.title} الآن`;
-      btn.onclick = () => openVodWatch(item.media_type, vodId, item.slug);
+      btn.textContent = `▶ صفحة وتفاصيل ${item.title}`;
+      btn.onclick = () => openVodDetailPage(item.media_type, item.slug, 1, 1, false);
     }
 
     function renderVodGrid(containerId, items) {
       const grid = document.getElementById(containerId);
       if (!grid) return;
       if (!items || !items.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--text-muted);">جاري تحميل المكتبة من TMDB...</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--text-muted);">جاري تحميل المكتبة...</div>`;
         return;
       }
       grid.innerHTML = items.map((it, idx) => {
         const typeLabel = it.category === 'anime' ? 'أنمي' : (it.media_type === 'series' ? 'مسلسل' : 'فيلم');
-        const vodId = it.tmdb_id || it.imdb_id;
         return `
-          <a href="${it.url}" class="vod-card" style="animation-delay:${Math.min(idx * 0.02, 0.35)}s" onclick="openVodWatch('${it.media_type}', '${vodId}', '${it.slug}'); return false;">
+          <a href="${it.url}" class="vod-card" style="animation-delay:${Math.min(idx * 0.02, 0.35)}s" onclick="openVodDetailPage('${it.media_type}', '${it.slug}', 1, 1, false); return false;">
             <div class="vod-poster-wrap">
               <img src="${it.poster}" loading="lazy" onerror="this.src='${FALLBACK_LOGO}'" alt="${it.title}" />
               <div class="vod-rating-badge">⭐ ${it.rating}</div>
@@ -1474,10 +1721,10 @@
         await openVodCategoryPage('series', false);
       } else if (page === 'anime') {
         await openVodCategoryPage('anime', false);
-      } else if (page === 'watch_vod' && boot.vod_item) {
-        showView('home');
-        loadMatches();
-        startVodPlayback(boot.vod_item);
+      } else if ((page === 'vod_detail' || page === 'watch_vod') && boot.vod_item) {
+        renderVodDetailView(boot.vod_item, boot.season || 1, boot.episode || 1, Boolean(boot.auto_play_vod));
+      } else if (page === 'legal') {
+        openLegalPage(boot.legal_tab || 'privacy', false);
       } else if (page === 'channels') {
         showView('channels');
         await loadMatches();
@@ -1503,9 +1750,23 @@
       }
     }
 
+    function closePlayerStage() {
+      const video = document.getElementById('liveVideo');
+      video.pause();
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      document.getElementById('vodIframe').src = 'about:blank';
+      document.getElementById('playerStage').style.display = 'none';
+      currentChannelId = '';
+      renderBeinDock();
+    }
+
     async function navigateTo(path, pageType) {
       window.history.pushState({}, '', path);
       document.getElementById('ssrArticleSlot').innerHTML = '';
+      closePlayerStage();
       setActiveNav(pageType);
 
       if (pageType === 'home') {
@@ -1541,7 +1802,31 @@
       else if (pathname === '/anime') navigateTo('/anime', 'anime');
       else if (pathname === '/standings') navigateTo('/standings', 'standings');
       else if (pathname === '/leagues') navigateTo('/leagues', 'leagues');
-      else navigateTo('/', 'home');
+      else if (pathname === '/privacy') openLegalPage('privacy', false);
+      else if (pathname === '/terms') openLegalPage('terms', false);
+      else if (pathname === '/dmca') openLegalPage('dmca', false);
+      else if (pathname === '/contact') openLegalPage('contact', false);
+      else if (pathname.startsWith('/movie/')) {
+        const slug = pathname.split('/')[2];
+        openVodDetailPage('movie', slug, 1, 1, false, false);
+      } else if (pathname.startsWith('/series/')) {
+        const parts = pathname.split('/').filter(Boolean);
+        const slug = parts[1] || '';
+        let sNum = 1;
+        let eNum = 1;
+        let autoPlay = false;
+        if (parts[2] && parts[2].startsWith('season-')) {
+          sNum = parseInt(parts[2].replace('season-', ''), 10) || 1;
+        }
+        if (parts[3] && parts[3].startsWith('episode-')) {
+          const m = parts[3].match(/^episode-(\d+)/);
+          if (m) eNum = parseInt(m[1], 10) || 1;
+          autoPlay = true;
+        }
+        openVodDetailPage('series', slug, sNum, eNum, autoPlay, false);
+      } else {
+        navigateTo('/', 'home');
+      }
     }
 
     function setActiveNav(pageType) {
@@ -1556,15 +1841,217 @@
       const isHome = (mode === 'home');
       document.getElementById('heroBillboard').style.display = isHome ? 'flex' : 'none';
       document.getElementById('topChannelsDock').style.display = (isHome || mode === 'matches') ? 'block' : 'none';
-      document.getElementById('playerStage').style.display = (isHome || mode === 'matches' || mode === 'matches_only' || mode === 'channels' || mode === 'vod_catalog') ? 'block' : 'none';
+      // IMPORTANT: Player is NEVER fixed/forced open when switching views!
       document.getElementById('viewMatchesContainer').style.display = (isHome || mode === 'matches' || mode === 'matches_only') ? 'block' : 'none';
       document.getElementById('homeVodShowcase').style.display = isHome ? 'block' : 'none';
       document.getElementById('vodCatalogSection').style.display = (mode === 'vod_catalog') ? 'block' : 'none';
+      document.getElementById('vodDetailPageSection').style.display = (mode === 'vod_detail') ? 'block' : 'none';
       document.getElementById('standingsSection').style.display = (mode === 'standings_full' || mode === 'standings_sub') ? 'block' : 'none';
       document.getElementById('standingsLeaguesBar').style.display = (mode === 'standings_full') ? 'flex' : 'none';
       document.getElementById('standingsHeaderBar').style.display = (mode === 'standings_full') ? 'flex' : 'none';
       document.getElementById('channelsDirectorySection').style.display = (mode === 'channels') ? 'block' : 'none';
       document.getElementById('leaguesDirectorySection').style.display = (mode === 'leagues') ? 'block' : 'none';
+      document.getElementById('legalPageSection').style.display = (mode === 'legal') ? 'block' : 'none';
+    }
+
+    /* --- DEDICATED VOD DETAIL PAGE, SEASONS & EPISODES ROUTING --- */
+    async function openVodDetailPage(mediaType, slugOrId, season = 1, episode = 1, autoPlay = false, pushUrl = true) {
+      closePlayerStage();
+      showView('vod_detail');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      document.getElementById('vodDetailTitle').textContent = 'جاري تحميل تفاصيل العرض...';
+      document.getElementById('vodDetailStory').textContent = '';
+
+      try {
+        const res = await fetch(`/api/vod/meta/${mediaType}/${encodeURIComponent(slugOrId)}?season=${season}&episode=${episode}`);
+        const item = await res.json();
+        if (!item || item.error) return;
+
+        if (pushUrl) {
+          let targetUrl = item.url || `/${mediaType === 'movie' ? 'movie' : 'series'}/${item.slug}`;
+          if (mediaType !== 'movie' && autoPlay) {
+            const epObj = (item.season_episodes || []).find(e => Number(e.episode) === Number(episode));
+            const epSlug = epObj ? epObj.slug : `episode-${episode}`;
+            targetUrl = `/series/${item.slug}/season-${season}/${epSlug}`;
+          } else if (mediaType !== 'movie' && Number(season) > 1) {
+            targetUrl = `/series/${item.slug}/season-${season}`;
+          }
+          window.history.pushState({}, '', targetUrl);
+        }
+
+        renderVodDetailView(item, season, episode, autoPlay);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderVodDetailView(item, season = 1, episode = 1, autoPlay = false) {
+      currentVodDetail = item;
+      currentVodSeason = Number(season) || 1;
+      currentVodEpisode = Number(episode) || 1;
+
+      showView('vod_detail');
+
+      const isMovie = (item.media_type === 'movie');
+      const hero = document.getElementById('vodDetailHero');
+      hero.style.backgroundImage = `url('${item.backdrop || item.poster}')`;
+      document.getElementById('vodDetailPoster').src = item.poster;
+      document.getElementById('vodDetailPoster').alt = item.title;
+
+      // Breadcrumbs
+      const catLink = isMovie
+        ? `<a href="/movies" onclick="navigateTo('/movies','movies'); return false;">الأفلام</a>`
+        : `<a href="/series" onclick="navigateTo('/series','series'); return false;">المسلسلات والأنمي</a>`;
+      let crumbsHtml = `<a href="/" onclick="navigateTo('/','home'); return false;">الرئيسية</a> <span>/</span> ${catLink} <span>/</span> <a href="${item.url}" onclick="openVodDetailPage('${item.media_type}','${item.slug}',1,1,false); return false;">${item.title}</a>`;
+      if (!isMovie) {
+        crumbsHtml += ` <span>/</span> <span>الموسم ${currentVodSeason}</span>`;
+        if (autoPlay) {
+          crumbsHtml += ` <span>/</span> <span style="color:var(--gold);">الحلقة ${currentVodEpisode}</span>`;
+        }
+      }
+      document.getElementById('vodDetailCrumbs').innerHTML = crumbsHtml;
+
+      document.getElementById('vodDetailTitle').textContent = item.title;
+      document.getElementById('vodDetailOrig').textContent = `${item.original_title || ''} (${item.year})`;
+
+      const genresHtml = (item.genres || []).map(g => `<span class="vod-meta-pill">${g}</span>`).join('');
+      document.getElementById('vodDetailMeta').innerHTML = `
+        <span class="vod-meta-pill gold">⭐ TMDB ${item.rating}</span>
+        <span class="vod-meta-pill">📅 ${item.year}</span>
+        <span class="vod-meta-pill">⏱️ ${item.runtime || 110} دقيقة</span>
+        <span class="vod-meta-pill">4K & 1080p FHD</span>
+        ${genresHtml}
+      `;
+
+      document.getElementById('vodDetailStory').textContent = item.description;
+
+      const castEl = document.getElementById('vodDetailCast');
+      if (item.cast && item.cast.length) {
+        castEl.innerHTML = `🌟 أبطال العمل: <b>${item.cast.join(' ، ')}</b>`;
+        castEl.style.display = 'block';
+      } else {
+        castEl.style.display = 'none';
+      }
+
+      const playBtn = document.getElementById('vodDetailPlayBtn');
+      if (isMovie) {
+        playBtn.textContent = `▶ مشاهدة فيلم ${item.title} الآن (6 سيرفرات)`;
+      } else {
+        playBtn.textContent = `▶ تشغيل الموسم ${currentVodSeason} - الحلقة ${currentVodEpisode} الآن`;
+      }
+
+      const backBtn = document.getElementById('vodDetailBackBtn');
+      backBtn.href = isMovie ? '/movies' : '/series';
+      backBtn.onclick = () => {
+        navigateTo(isMovie ? '/movies' : '/series', isMovie ? 'movies' : 'series');
+        return false;
+      };
+
+      const seasonsBox = document.getElementById('vodSeasonsContainer');
+      if (!isMovie && item.seasons && item.seasons.length) {
+        seasonsBox.style.display = 'block';
+        renderDetailSeasonsTabs(item);
+        renderDetailEpisodesGrid(item.season_episodes || []);
+      } else {
+        seasonsBox.style.display = 'none';
+      }
+
+      if (autoPlay) {
+        startPlayingCurrentDetail();
+      }
+    }
+
+    function renderDetailSeasonsTabs(item) {
+      const tabs = document.getElementById('vodSeasonsTabs');
+      tabs.innerHTML = (item.seasons || []).map(s => {
+        const sUrl = `/series/${item.slug}/season-${s.season}`;
+        const active = Number(s.season) === Number(currentVodSeason) ? 'active' : '';
+        return `
+          <a href="${sUrl}" class="season-tab-btn ${active}" onclick="selectDetailSeason(${s.season}); return false;">
+            📺 الموسم ${s.season} (${s.episodes} حلقة)
+          </a>
+        `;
+      }).join('');
+    }
+
+    async function selectDetailSeason(seasonNum) {
+      if (!currentVodDetail) return;
+      currentVodSeason = Number(seasonNum) || 1;
+      currentVodEpisode = 1;
+      const sUrl = `/series/${currentVodDetail.slug}/season-${currentVodSeason}`;
+      window.history.pushState({}, '', sUrl);
+      renderDetailSeasonsTabs(currentVodDetail);
+
+      const grid = document.getElementById('vodEpisodesGrid');
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--text-muted);">جاري تحميل حلقات الموسم ${currentVodSeason}...</div>`;
+
+      try {
+        const res = await fetch(`/api/vod/season/${encodeURIComponent(currentVodDetail.slug)}/${currentVodSeason}`);
+        const data = await res.json();
+        currentVodDetail.season_episodes = data.episodes || [];
+        renderDetailEpisodesGrid(currentVodDetail.season_episodes);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderDetailEpisodesGrid(episodes) {
+      const grid = document.getElementById('vodEpisodesGrid');
+      if (!episodes || !episodes.length) {
+        const sObj = (currentVodDetail.seasons || []).find(s => Number(s.season) === Number(currentVodSeason)) || { episodes: 12 };
+        const fallbackEps = [];
+        for (let i = 1; i <= Number(sObj.episodes || 12); i++) {
+          fallbackEps.push({
+            episode: i,
+            season: currentVodSeason,
+            name: `الحلقة ${i}`,
+            en_name: `Episode ${i}`,
+            slug: `episode-${i}`,
+            still: currentVodDetail.backdrop || currentVodDetail.poster,
+            overview: `مشاهدة وتحميل الحلقة ${i} من الموسم ${currentVodSeason} مترجمة بجودة Full HD.`,
+            runtime: 45,
+            url: `/series/${currentVodDetail.slug}/season-${currentVodSeason}/episode-${i}`
+          });
+        }
+        episodes = fallbackEps;
+      }
+
+      grid.innerHTML = episodes.map(ep => {
+        const epUrl = ep.url || `/series/${currentVodDetail.slug}/season-${currentVodSeason}/${ep.slug}`;
+        const isCurrent = Number(ep.episode) === Number(currentVodEpisode);
+        return `
+          <a href="${epUrl}" class="ep-card ${isCurrent ? 'active' : ''}" onclick="playEpisodeFromDetail(${currentVodSeason}, ${ep.episode}, '${ep.slug}'); return false;">
+            <div class="ep-thumb-wrap">
+              <img src="${ep.still || currentVodDetail.backdrop || currentVodDetail.poster}" loading="lazy" onerror="this.src='${FALLBACK_LOGO}'" alt="${ep.name}" />
+              <span class="ep-num-badge">الحلقة ${ep.episode}</span>
+              <span class="ep-time-badge">▶ ${ep.runtime || 45} دقيقة</span>
+            </div>
+            <div class="ep-body">
+              <div class="ep-title">${ep.name}</div>
+              <div class="ep-sub">S${currentVodSeason} • E${ep.episode} — ${ep.en_name || ''}</div>
+              <div class="ep-desc">${ep.overview || `شاهد الحلقة ${ep.episode} من ${currentVodDetail.title} مترجمة بجودة عالية.`}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    function playEpisodeFromDetail(seasonNum, epNum, epSlug) {
+      if (!currentVodDetail) return;
+      currentVodSeason = Number(seasonNum) || 1;
+      currentVodEpisode = Number(epNum) || 1;
+      const slugPart = epSlug || `episode-${currentVodEpisode}`;
+      const epUrl = `/series/${currentVodDetail.slug}/season-${currentVodSeason}/${slugPart}`;
+      window.history.pushState({}, '', epUrl);
+      renderDetailEpisodesGrid(currentVodDetail.season_episodes || []);
+      startPlayingCurrentDetail();
+    }
+
+    function startPlayingCurrentDetail() {
+      if (!currentVodDetail) return;
+      startVodPlayback(currentVodDetail, currentVodSeason, currentVodEpisode);
+      document.getElementById('playerStage').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     /* --- VOD CATALOG & 6-SERVER PLAYER FUNCTIONS --- */
@@ -1572,9 +2059,9 @@
       currentVodCategory = cat;
       showView('vod_catalog');
       const titles = {
-        movie: '🎬 مكتبة الأفلام العالمية المترجمة (TMDB Movies)',
-        series: '📺 مكتبة المسلسلات الأجنبية والعالمية (TMDB Series)',
-        anime: '🔥 مكتبة الأنمي الياباني المترجم (TMDB Anime)'
+        movie: '🎬 مكتبة الأفلام العالمية المترجمة',
+        series: '📺 مكتبة المسلسلات الأجنبية والعالمية',
+        anime: '🔥 مكتبة الأنمي الياباني المترجم'
       };
       document.getElementById('vodCatalogTitle').textContent = titles[cat] || titles.movie;
       document.getElementById('vodGenrePills').style.display = (cat === 'anime') ? 'none' : 'flex';
@@ -1605,35 +2092,12 @@
       }, 380);
     }
 
-    async function openVodWatch(mediaType, vodId, slug = '') {
-      const targetUrl = `/watch/${mediaType}/${vodId}/${slug}`;
-      window.history.pushState({}, '', targetUrl);
-
-      document.getElementById('playerStage').style.display = 'block';
-      document.getElementById('playerStage').scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      const overlay = document.getElementById('playerOverlay');
-      overlay.classList.remove('hidden');
-      document.getElementById('overlaySpinner').style.display = 'block';
-      document.getElementById('overlayPlayBtn').style.display = 'none';
-      document.getElementById('overlayTitle').textContent = 'جاري جلب بيانات العرض وسيرفرات المشاهدة...';
-
-      try {
-        const res = await fetch(`/api/vod/meta/${mediaType}/${vodId}`);
-        const item = await res.json();
-        startVodPlayback(item);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    function startVodPlayback(item) {
+    function startVodPlayback(item, seasonNum = 1, episodeNum = 1) {
       currentVodDetail = item;
       currentVodServerIdx = 0;
-      currentVodSeason = 1;
-      currentVodEpisode = 1;
+      currentVodSeason = Number(seasonNum) || 1;
+      currentVodEpisode = Number(episodeNum) || 1;
 
-      // Stop live HLS if running
       const video = document.getElementById('liveVideo');
       video.pause();
       if (hlsInstance) {
@@ -1643,12 +2107,17 @@
       video.style.display = 'none';
       document.getElementById('liveCustomControls').style.display = 'none';
 
+      document.getElementById('playerStage').style.display = 'block';
       const iframe = document.getElementById('vodIframe');
       iframe.style.display = 'block';
       document.getElementById('playerOverlay').classList.add('hidden');
 
       document.getElementById('npModeBadge').innerHTML = `🎬 سينمانا VOD • ⭐ ${item.rating}`;
-      document.getElementById('npChannelName').textContent = `${item.title} (${item.year})`;
+      if (item.media_type === 'series') {
+        document.getElementById('npChannelName').textContent = `${item.title} — الموسم ${currentVodSeason} الحلقة ${currentVodEpisode}`;
+      } else {
+        document.getElementById('npChannelName').textContent = `${item.title} (${item.year})`;
+      }
       document.getElementById('npMatchTitle').textContent = item.description;
 
       const srvBar = document.getElementById('vodServersBar');
@@ -1658,8 +2127,8 @@
       if (item.media_type === 'series' && item.seasons && item.seasons.length) {
         epBox.style.display = 'flex';
         const sSel = document.getElementById('seasonSelect');
-        sSel.innerHTML = item.seasons.map(s => `<option value="${s.season}">الموسم ${s.season}</option>`).join('');
-        populateEpisodesDropdown(1);
+        sSel.innerHTML = item.seasons.map(s => `<option value="${s.season}" ${Number(s.season) === currentVodSeason ? 'selected' : ''}>الموسم ${s.season}</option>`).join('');
+        populateEpisodesDropdown(currentVodSeason, currentVodEpisode);
       } else {
         epBox.style.display = 'none';
       }
@@ -1668,13 +2137,13 @@
       loadCurrentVodIframe();
     }
 
-    function populateEpisodesDropdown(seasonNum) {
+    function populateEpisodesDropdown(seasonNum, selectedEp = 1) {
       const sObj = (currentVodDetail.seasons || []).find(s => Number(s.season) === Number(seasonNum)) || { episodes: 12 };
       const epCount = Math.max(1, Number(sObj.episodes || 12));
       const eSel = document.getElementById('episodeSelect');
       let html = '';
       for (let e = 1; e <= epCount; e++) {
-        html += `<option value="${e}">الحلقة ${e}</option>`;
+        html += `<option value="${e}" ${e === Number(selectedEp) ? 'selected' : ''}>الحلقة ${e}</option>`;
       }
       eSel.innerHTML = html;
     }
@@ -1682,12 +2151,21 @@
     function onSeasonChange() {
       currentVodSeason = parseInt(document.getElementById('seasonSelect').value, 10) || 1;
       currentVodEpisode = 1;
-      populateEpisodesDropdown(currentVodSeason);
+      populateEpisodesDropdown(currentVodSeason, 1);
+      if (currentVodDetail && currentVodDetail.slug) {
+        selectDetailSeason(currentVodSeason);
+      }
       loadCurrentVodIframe();
     }
 
     function onEpisodeChange() {
       currentVodEpisode = parseInt(document.getElementById('episodeSelect').value, 10) || 1;
+      if (currentVodDetail && currentVodDetail.slug) {
+        const epObj = (currentVodDetail.season_episodes || []).find(e => Number(e.episode) === currentVodEpisode);
+        const epSlug = epObj ? epObj.slug : `episode-${currentVodEpisode}`;
+        window.history.pushState({}, '', `/series/${currentVodDetail.slug}/season-${currentVodSeason}/${epSlug}`);
+        document.getElementById('npChannelName').textContent = `${currentVodDetail.title} — الموسم ${currentVodSeason} الحلقة ${currentVodEpisode}`;
+      }
       loadCurrentVodIframe();
     }
 
@@ -1737,6 +2215,48 @@
       const srvs = buildClientVodServers(currentVodDetail, currentVodSeason, currentVodEpisode);
       const chosen = srvs[currentVodServerIdx] || srvs[0];
       document.getElementById('vodIframe').src = chosen.url;
+    }
+
+    /* --- LEGAL PAGES RENDERER (/privacy, /terms, /dmca, /contact) --- */
+    function openLegalPage(tab, push = true) {
+      closePlayerStage();
+      showView('legal');
+      if (push) {
+        window.history.pushState({}, '', `/${tab}`);
+      }
+      const box = document.getElementById('legalCardContent');
+      const pages = {
+        privacy: `
+          <h1>🔒 سياسة الخصوصية (Privacy Policy)</h1>
+          <p>مرحباً بكم في منصة <strong>سينمانا لايف (Cinemana Live)</strong>. نحن نحترم خصوصية زوارنا ونلتزم بحماية البيانات الشخصية وفق أعلى المعايير التقنية.</p>
+          <h3>1. المعلومات التي نجمعها</h3>
+          <p>لا يتطلب تصفح ومشاهدة المحتوى على سينمانا لايف إنشاء حساب أو إدخال بيانات شخصية. قد نستخدم ملفات تعريف الارتباط (Cookies) الأساسية لتحسين سرعة البث وتذكر تفضيلات المشغل.</p>
+          <h3>2. المشغلات المدمجة</h3>
+          <p>يعتمد الموقع على مشغلات فيديو سحابية خارجية لعرض الأفلام والمسلسلات، وتطبق هذه المشغلات سياسات الخصوصية الخاصة بها بدون مشاركة أي بيانات حساسة للمستخدم.</p>
+        `,
+        terms: `
+          <h1>📜 شروط وأحكام الاستخدام (Terms of Use)</h1>
+          <p>باستخدامك لموقع <strong>سينمانا لايف (cinemana.live)</strong>، فإنك توافق على الالتزام بشروط الاستخدام الموضحة أدناه:</p>
+          <h3>1. الاستخدام الشخصي</h3>
+          <p>جميع خدمات البث المباشر والمكتبة الترفيهية متاحة للاستخدام الشخصي غير التجاري فقط.</p>
+          <h3>2. توافر الخدمة</h3>
+          <p>نسعى لتوفير البث المباشر على مدار الساعة بجودات 4K و Full HD عبر عدة سيرفرات احتياطية لضمان عدم الانقطاع.</p>
+        `,
+        dmca: `
+          <h1>⚖️ حقوق الملكية الفكرية وإخلاء المسؤولية (DMCA)</h1>
+          <p>يحترم موقع <strong>سينمانا لايف (Cinemana Live)</strong> حقوق الملكية الفكرية لجميع الشركات والمنتجين وفق قانون الألفية للملكية الرقمية (DMCA).</p>
+          <h3>إخلاء مسؤولية عن المحتوى المضمن</h3>
+          <p>موقع سينمانا لايف لا يقوم برفع أو استضافة أي ملفات فيديو محمية بحقوق الطبع والنشر على خوادمه الخاصة، بل يقوم بفهرسة وتضمين الروابط المتاحة علناً عبر واجهات برمجية خارجية مثل TMDB وموفري التضمين العالميين.</p>
+        `,
+        contact: `
+          <h1>✉️ اتصل بنا (Contact Us)</h1>
+          <p>يسعدنا تواصلكم مع فريق دعم وإدارة <strong>سينمانا لايف (Cinemana Live)</strong> للإبلاغ عن أي رابط لا يعمل أو لتقديم الاقتراحات والاستفسارات الإعلانية والقانونية.</p>
+          <h3>البريد الإلكتروني الرسمي</h3>
+          <p>📧 <strong>support@cinemana.live</strong> / <strong>dmca@cinemana.live</strong></p>
+        `
+      };
+      box.innerHTML = pages[tab] || pages.privacy;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /* --- LIVE CHANNELS & MATCHES FUNCTIONS --- */
@@ -1931,7 +2451,6 @@
         const liveCount = data.live_count || 0;
         document.getElementById('liveCountBadge').textContent = liveCount > 0 ? `${liveCount} مباريات جارية الآن` : 'بث مباشر 4K & FHD';
         renderMatches();
-        renderSeoLinksHub();
       } catch (e) {
         console.error(e);
       }
@@ -2022,35 +2541,7 @@
 
     function openMatchStream(matchUrl, channelId, matchTitle) {
       window.history.pushState({}, '', matchUrl);
-      document.getElementById('playerStage').style.display = 'block';
       playChannel(channelId, matchTitle, true);
-    }
-
-    function renderSeoLinksHub() {
-      const hub = document.getElementById('seoLinksHub');
-      if (!hub) return;
-      const pageLinks = [
-        `<a href="/" class="seo-link-chip">سينمانا لايف الرئيسية</a>`,
-        `<a href="/matches" class="seo-link-chip">جدول مباريات اليوم</a>`,
-        `<a href="/channels" class="seo-link-chip">القنوات الرياضية المباشرة</a>`,
-        `<a href="/movies" class="seo-link-chip">مشاهدة أفلام مترجمة</a>`,
-        `<a href="/series" class="seo-link-chip">مسلسلات أجنبية مترجمة</a>`,
-        `<a href="/anime" class="seo-link-chip">أنمي مترجم FHD</a>`,
-        `<a href="/standings" class="seo-link-chip">جداول ترتيب الدوريات</a>`
-      ];
-      const channelLinks = CHANNELS.map(c =>
-        `<a href="/channel/${c.id}" class="seo-link-chip">بث مباشر ${c.name} (${c.quality})</a>`
-      );
-      const leagueLinks = LEAGUES.map(l =>
-        `<a href="/league/${l.id}/${l.slug || ''}" class="seo-link-chip">ترتيب ومباريات ${l.name}</a>`
-      );
-      const matchLinks = ALL_MATCHES.slice(0, 14).map(m =>
-        `<a href="${m.url || '/match/' + m.id}" class="seo-link-chip">مشاهدة مباراة ${m.home_name} و ${m.away_name}</a>`
-      );
-      const vodLinks = [...HOME_MOVIES.slice(0, 10), ...HOME_SERIES.slice(0, 8), ...HOME_ANIME.slice(0, 6)].map(v =>
-        `<a href="${v.url}" class="seo-link-chip">مشاهدة ${v.title} (${v.year}) مترجم</a>`
-      );
-      hub.innerHTML = [...pageLinks, ...channelLinks, ...leagueLinks, ...matchLinks, ...vodLinks].join('');
     }
 
     async function loadStandings(compId) {
@@ -2091,10 +2582,8 @@
     /* --- CUSTOM HLS VIDEO PLAYER ENGINE (FOR LIVE SPORTS CHANNELS) --- */
     async function playChannel(channelId, matchTitle = '', scroll = true) {
       currentChannelId = channelId;
-      currentVodDetail = null;
       renderBeinDock();
 
-      // Switch stage from VOD iframe back to Live HLS Video
       const iframe = document.getElementById('vodIframe');
       iframe.src = 'about:blank';
       iframe.style.display = 'none';
@@ -2185,9 +2674,9 @@
     }
 
     function reloadCurrentStream() {
-      if (currentVodDetail) {
+      if (currentVodDetail && document.getElementById('vodIframe').style.display !== 'none') {
         loadCurrentVodIframe();
-      } else {
+      } else if (currentChannelId) {
         playChannel(currentChannelId);
       }
     }
