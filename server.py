@@ -798,8 +798,8 @@ PRIMARY_DOMAIN = "https://cinemana.live"
 
 
 def get_canonical_base():
-    host = (request.host or "").lower()
-    if "cinemana.live" in host:
+    host = (request.headers.get("X-Forwarded-Host") or request.host or "").lower()
+    if "cinemana.live" in host or "onrender.com" in host:
         return PRIMARY_DOMAIN
     base_url = request.host_url.rstrip("/")
     if request.headers.get("X-Forwarded-Proto") == "https" and base_url.startswith("http://"):
