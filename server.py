@@ -926,7 +926,7 @@ def build_ssr_vod_links_summary(items, heading):
         for it in items[:15]
     ])
     return f"""
-    <div class="ssr-crawler-summary" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+    <div class="ssr-crawler-summary" style="display:none;" aria-hidden="true">
       <h1>{heading}</h1>
       <ul>{links_html}</ul>
     </div>
