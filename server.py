@@ -1733,6 +1733,120 @@ def serve_hls(channel_id, filename):
     return resp
 
 
+# --- FACEBOOK MESSENGER AI AUTO-REPLY BOT ENGINE ---
+
+FB_PAGE_TOKEN = "EAAZAYeIVZCHk0BS8SjKdcRxWKJtWNrr2DwOfae24NDTp8PmDf4aaGRPDuCrjsNvUGXUEvVcwXeS0MZBapLuZAadiUOILO1BDKNT8wIQGDxxanKjSfoPSlOaz11wKQHstQG3rfCzlV6ZAhCH4OdovZBLYDKXAaiuufAxrDcJHrrHSgvFpsYxqb6g97uaQTd2kE31rPUeDZTeDsjVq"
+FB_VERIFY_TOKEN = "cinemana_ai_bot_2026"
+
+
+def send_fb_text_message(recipient_id, text):
+    """Sends a reply text message back to the Facebook user via Graph API."""
+    url = f"https://graph.facebook.com/v21.0/me/messages?access_token={FB_PAGE_TOKEN}"
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": {"text": text}
+    }
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status == 200
+    except Exception as e:
+        print("FB send error:", e)
+        return False
+
+
+def generate_bot_reply(sender_id, user_text, attachments=None):
+    """Generates an intelligent context-aware reply for Cinemana Premium."""
+    t = (user_text or "").strip().lower()
+
+    if attachments:
+        return "أهلاً بك! تم استلام الصورة/الوصل بنجاح، جاري التحقق من عملية التحويل لتفعيل الاشتراك فوراً... ⏳✨"
+
+    if any(k in t for k in ("سلام", "مرحبا", "هلو", "مساء", "صباح", "منور", "بداية", "start")):
+        return (
+            "أهلاً وسهلاً بك في سينمانا بريميوم (Cinemana Premium)! 🎬✨\n\n"
+            "نقدم لك أفضل وأسرع اشتراكات البث المباشر والأفلام والمسلسلات بجودة 4K فائقة الوضوح وبدون أي تقطيع.\n\n"
+            "📌 للاستفسار عن الباقات والأسعار أرسل: (الأسعار)\n"
+            "📌 لمعرفة طرق الدفع المتوفرة أرسل: (الدفع)\n"
+            "📌 للحصول على كود تجريبي أرسل: (تجربة)\n\n"
+            "كيف نكدر نساعدك اليوم؟ 😊"
+        )
+
+    if any(k in t for k in ("سعر", "اسعار", "الاسعار", "باقة", "اشتراك", "بكم", "بيش")):
+        return (
+            "🌟 باقات اشتراك سينمانا بريميوم (Cinemana Premium):\n\n"
+            "1️⃣ باقة الشهر: 5,000 دينار عراقي\n"
+            "2️⃣ باقة 3 أشهر: 12,000 دينار عراقي\n"
+            "3️⃣ باقة 6 أشهر: 20,000 دينار عراقي\n"
+            "4️⃣ باقة السنة (الأوفر): 35,000 دينار عراقي\n\n"
+            "💎 المميزات: مكتبة كاملة 4K، بث مباشر لجميع قنوات الرياضة، دعم على جميع الأجهزة (شاشات، موبايل، كمبيوتر).\n\n"
+            "للاشتراك والدفع، أرسل: (الدفع)"
+        )
+
+    if any(k in t for k in ("دفع", "طرق الدفع", "زين كاش", "تحويل", "ماستر", "كاش", "اسيا")):
+        return (
+            "💳 طرق الدفع المعتمدة لدينا:\n\n"
+            "📱 زين كاش (ZainCash)\n"
+            "💳 ماستر كارد / فيزا كارد (Qi / Switch / First)\n"
+            "📲 رصيد آسياسيل\n\n"
+            "يرجى تحديد الطريقة التي تناسبك لإرسال تفاصيل ورقم التحويل، وبعد التحويل فقط أرسل صورة الوصل هنا لتفعيل حسابك فوراً! 🚀"
+        )
+
+    if any(k in t for k in ("تجربة", "تيست", "تجريب", "فحص", "كود")):
+        return (
+            "🎁 أهلاً بك! كودك التجريبي المجاني لتطبيق سينمانا لايف:\n\n"
+            "🔑 الكود: CINEMANA-PRO-2026\n"
+            "🌐 الرابط المباشر: https://cinemana.live\n\n"
+            "استمتع بالمشاهدة وإذا حبيت تثبت الاشتراك نحن بخدمتك بأي وقت! ❤️"
+        )
+
+    return (
+        "شكراً لتواصلك مع سينمانا بريميوم! ✨\n"
+        "تم استلام رسالتك وسيتم الرد عليك فوراً من قبل الدعم الفني، أو يمكنك إرسال (الأسعار) لمعرفة العروض والباقات المتوفرة حالياً. 😊"
+    )
+
+
+@app.route("/webhook", methods=["GET", "POST"])
+def fb_messenger_webhook():
+    if request.method == "GET":
+        # Verification request from Facebook
+        mode = request.args.get("hub.mode")
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        if mode == "subscribe" and token == FB_VERIFY_TOKEN:
+            print("Webhook Verified by Facebook successfully!")
+            return Response(challenge, status=200, mimetype="text/plain")
+        return ("Verification failed", 403)
+
+    # POST: Incoming messages / events from Messenger
+    data = request.get_json(silent=True) or {}
+    if data.get("object") == "page":
+        for entry in data.get("entry", []):
+            for messaging_event in entry.get("messaging", []):
+                sender_id = messaging_event.get("sender", {}).get("id")
+                if not sender_id:
+                    continue
+
+                if "message" in messaging_event:
+                    msg = messaging_event["message"]
+                    if msg.get("is_echo"):
+                        continue
+                    user_text = msg.get("text", "")
+                    attachments = msg.get("attachments")
+                    reply_text = generate_bot_reply(sender_id, user_text, attachments)
+                    send_fb_text_message(sender_id, reply_text)
+
+                elif "postback" in messaging_event:
+                    payload = messaging_event["postback"].get("payload", "")
+                    reply_text = generate_bot_reply(sender_id, payload)
+                    send_fb_text_message(sender_id, reply_text)
+
+        return ("EVENT_RECEIVED", 200)
+
+    return ("Not handled", 404)
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5080"))
     print(f"Starting Cinemana Live Server on http://0.0.0.0:{port} ...")
