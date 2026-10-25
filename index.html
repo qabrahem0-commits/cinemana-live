@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <!-- Adsterra Native Banner Script -->
+  <script async="async" data-cfasync="false" src="https://bancadeltempoidea.org/21/84da27d686db77ce1982f681c590f2c1"></script>
   <style>
     :root {
       --bg-deep: #05070d;
@@ -1686,6 +1688,23 @@
       </div>
     </section>
 
+    <!-- ADSTERRA 468x60 BANNER (HOMEPAGE CHANNELS) -->
+    <div class="adsterra-banner-home" style="max-width: 1400px; margin: 1.2rem auto 0.6rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 1rem;">
+      <div style="font-size: 0.65rem; color: #64748b; margin-bottom: 0.25rem; font-weight: 700;">— إعلان ممول —</div>
+      <div style="max-width: 100%; overflow: hidden; display: flex; justify-content: center; min-height: 60px;">
+        <script>
+          atOptions = {
+            'key' : '9753b60aef4986fcd0a9e384ac41f5d1',
+            'format' : 'iframe',
+            'height' : 60,
+            'width' : 468,
+            'params' : {}
+          };
+        </script>
+        <script src="https://bancadeltempoidea.org/22/9753b60aef4986fcd0a9e384ac41f5d1"></script>
+      </div>
+    </div>
+
     <!-- 5 BEIN SPORTS CHANNELS QUICK BAR -->
     <section class="channels-dock-wrap" id="topChannelsDock">
       <div class="sec-head" style="margin-top:0;">
@@ -1733,7 +1752,27 @@
         </div>
       </div>
 
+      <!-- ADSTERRA 468x60 BANNER (DIRECTLY ABOVE LIVE PLAYER) -->
+      <div class="adsterra-banner-top-stage" style="margin: 0.65rem auto; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 10;">
+        <div style="font-size: 0.65rem; color: #64748b; margin-bottom: 0.25rem; font-weight: 700; letter-spacing: 0.5px;">— إعلان ممول —</div>
+        <div style="max-width: 100%; overflow: hidden; display: flex; justify-content: center; min-height: 60px;">
+          <script>
+            atOptions = {
+              'key' : '9753b60aef4986fcd0a9e384ac41f5d1',
+              'format' : 'iframe',
+              'height' : 60,
+              'width' : 468,
+              'params' : {}
+            };
+          </script>
+          <script src="https://bancadeltempoidea.org/22/9753b60aef4986fcd0a9e384ac41f5d1"></script>
+        </div>
+      </div>
+
       <div class="video-viewport" id="videoViewport">
+        <!-- Smartlink Iframe Interceptor (Hidden when cooldown active, shown when 90s elapse) -->
+        <div id="adSmartlinkIframeOverlay" onclick="executeSmartlink()" style="position:absolute; inset:0; z-index:4; cursor:pointer; display:none; background:transparent;"></div>
+
         <div class="player-watermark">
           <span>CINEMANA <b>LIVE</b></span>
         </div>
@@ -1776,6 +1815,12 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- ADSTERRA NATIVE BANNER (DIRECTLY BELOW LIVE PLAYER) -->
+      <div class="adsterra-banner-bottom-wrap" style="margin: 0.85rem auto 0.4rem; text-align: center; width: 100%; padding: 0.75rem 0.5rem; background: rgba(15, 23, 42, 0.65); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <div style="font-size: 0.65rem; color: #64748b; margin-bottom: 0.35rem; font-weight: 700;">— محتوى ممول مقترح —</div>
+        <div id="container-84da27d686db77ce1982f681c590f2c1"></div>
       </div>
     </section>
 
@@ -3120,6 +3165,64 @@
         video.requestPictureInPicture().catch(() => {});
       }
     }
+
+    /* --- ADSTERRA SMARTLINK ENGINE (90-SECOND INTERVAL) --- */
+    const ADSTERRA_SMARTLINK_URL = "https://directyp.org/4/c60fb2e278a72ea897141c3a38e34197";
+    const ADSTERRA_INTERVAL_MS = 90 * 1000; // 90 seconds (1.5 minutes)
+    let isSmartlinkTriggering = false;
+
+    function shouldTriggerSmartlink() {
+      try {
+        const last = parseInt(localStorage.getItem('cinemana_ad_smartlink_time') || '0', 10);
+        return (Date.now() - last) >= ADSTERRA_INTERVAL_MS;
+      } catch(e) {
+        return true;
+      }
+    }
+
+    function executeSmartlink() {
+      if (isSmartlinkTriggering) return false;
+      if (!shouldTriggerSmartlink()) return false;
+      isSmartlinkTriggering = true;
+      try {
+        localStorage.setItem('cinemana_ad_smartlink_time', Date.now().toString());
+      } catch(e){}
+
+      const win = window.open(ADSTERRA_SMARTLINK_URL, '_blank');
+      if (win) {
+        try { win.blur(); } catch(e){}
+        window.focus();
+      }
+      setTimeout(() => {
+        isSmartlinkTriggering = false;
+        updateIframeOverlay();
+      }, 1500);
+      return true;
+    }
+
+    // Site-wide and Player click triggers (captures live player clicks, match cards, buttons, background)
+    document.addEventListener('click', function(e) {
+      executeSmartlink();
+    }, true);
+
+    document.addEventListener('touchend', function(e) {
+      executeSmartlink();
+    }, { passive: true });
+
+    // Iframe smart overlay manager (ensures clicks on VOD iframes also trigger Smartlink when cooldown expires)
+    function updateIframeOverlay() {
+      const ov = document.getElementById('adSmartlinkIframeOverlay');
+      if (!ov) return;
+      const vodIframe = document.getElementById('vodIframe');
+      const isVodActive = vodIframe && vodIframe.style.display !== 'none' && vodIframe.src && vodIframe.src !== 'about:blank';
+      if (isVodActive && shouldTriggerSmartlink()) {
+        ov.style.display = 'block';
+      } else {
+        ov.style.display = 'none';
+      }
+    }
+
+    setInterval(updateIframeOverlay, 4000);
 
     window.addEventListener('DOMContentLoaded', initApp);
   </script>
