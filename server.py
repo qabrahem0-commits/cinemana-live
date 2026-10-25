@@ -1798,6 +1798,9 @@ def create_reseller_trial_line(sender_id):
     return f"cin_{suffix}", f"pass{random.randint(1000, 9999)}"
 
 
+LAST_BOT_LOGS = []
+
+
 def send_fb_text_message(recipient_id, text):
     """Sends a reply text message back to the Facebook user via Graph API."""
     url = f"https://graph.facebook.com/v21.0/me/messages?access_token={FB_PAGE_TOKEN}"
@@ -1809,8 +1812,16 @@ def send_fb_text_message(recipient_id, text):
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
+            body = r.read().decode("utf-8")
+            LAST_BOT_LOGS.append({"time": time.time(), "recipient": recipient_id, "status": r.status, "resp": body})
             return r.status == 200
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8")
+        LAST_BOT_LOGS.append({"time": time.time(), "recipient": recipient_id, "error_code": e.code, "error_body": err_body})
+        print(f"FB send error {e.code}:", err_body)
+        return False
     except Exception as e:
+        LAST_BOT_LOGS.append({"time": time.time(), "recipient": recipient_id, "error": str(e)})
         print("FB send error:", e)
         return False
 
@@ -2037,6 +2048,7 @@ def fb_messenger_webhook():
 
     # POST: Incoming messages / events from Messenger
     data = request.get_json(silent=True) or {}
+    LAST_BOT_LOGS.append({"time": time.time(), "type": "incoming_webhook", "data": data})
     if data.get("object") == "page":
         for entry in data.get("entry", []):
             for messaging_event in entry.get("messaging", []):
@@ -2061,6 +2073,17 @@ def fb_messenger_webhook():
         return ("EVENT_RECEIVED", 200)
 
     return ("Not handled", 404)
+
+
+@app.route("/api/bot_status")
+def api_bot_status():
+    return jsonify({
+        "status": "active",
+        "page_token_length": len(FB_PAGE_TOKEN),
+        "token_prefix": FB_PAGE_TOKEN[:15] + "..." + FB_PAGE_TOKEN[-8:],
+        "recent_logs": LAST_BOT_LOGS[-15:],
+        "trials_db_count": len(load_trials_db())
+    })
 
 
 if __name__ == "__main__":
