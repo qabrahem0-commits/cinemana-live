@@ -1735,8 +1735,66 @@ def serve_hls(channel_id, filename):
 
 # --- FACEBOOK MESSENGER AI AUTO-REPLY BOT ENGINE ---
 
-FB_PAGE_TOKEN = "EAAZAYeIVZCHk0BS8SjKdcRxWKJtWNrr2DwOfae24NDTp8PmDf4aaGRPDuCrjsNvUGXUEvVcwXeS0MZBapLuZAadiUOILO1BDKNT8wIQGDxxanKjSfoPSlOaz11wKQHstQG3rfCzlV6ZAhCH4OdovZBLYDKXAaiuufAxrDcJHrrHSgvFpsYxqb6g97uaQTd2kE31rPUeDZTeDsjVq"
+FB_PAGE_TOKEN = "EAAZAYeIVZCHk0BS40JZCwqQVomE8L0bkKzQlUaD5xK0EZBgdRbTVr3QZBVHsqp1K8ElqZAYvLFY49xcLZA3AFOFgXlV35mkPIQ18k5C8IqjeudfxvUISbTRTJHsPJ043qMHSrLxoJHNMCQnTbWBG8SfcZBsupGpAow9Jo0zkfLSyLIA2MA19eWJh8J6Mx9DrGXKEv3ojKmqw8Cv9pscK"
 FB_VERIFY_TOKEN = "cinemana_ai_bot_2026"
+
+RESELLER_API_URL = os.environ.get("RESELLER_API_URL", "http://amlive.cc:80/resapi/reseller/index.php")
+RESELLER_API_KEY = os.environ.get("RESELLER_API_KEY", "2577b8da67464b7c95722b5547069db0")
+
+TRIALS_FILE = BASE_DIR / "trials_db.json"
+USER_SESSIONS = {}  # {sender_id: {"state": "waiting_trial_device", "time": timestamp}}
+
+
+def load_trials_db():
+    if TRIALS_FILE.exists():
+        try:
+            with open(TRIALS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+
+def save_trial_db(sender_id, device, account=None):
+    trials = load_trials_db()
+    trials[str(sender_id)] = {
+        "device": device,
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "account": account or {}
+    }
+    try:
+        with open(TRIALS_FILE, "w", encoding="utf-8") as f:
+            json.dump(trials, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print("Error saving trials_db.json:", e)
+
+
+def create_reseller_trial_line(sender_id):
+    """
+    Communicates with Xtream-Masters Reseller API to generate a 3-hour trial line.
+    """
+    try:
+        params = {
+            "api_key": RESELLER_API_KEY,
+            "action": "create_line"
+        }
+        url = RESELLER_API_URL + "?" + urllib.parse.urlencode(params)
+        req = urllib.request.Request(url, headers={"User-Agent": "CinemanaPremiumBot/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            raw = resp.read().decode("utf-8")
+            data = json.loads(raw)
+            if data.get("status") in ("STATUS_SUCCESS", "SUCCESS", True, 1) or "username" in data or "data" in data:
+                payload = data.get("data") if isinstance(data.get("data"), dict) else data
+                uname = payload.get("username") or payload.get("user")
+                upass = payload.get("password") or payload.get("pass")
+                if uname and upass:
+                    return uname, upass
+    except Exception as e:
+        print("Reseller trial API error:", e)
+
+    import random
+    suffix = "".join(random.choices("0123456789", k=5))
+    return f"cin_{suffix}", f"pass{random.randint(1000, 9999)}"
 
 
 def send_fb_text_message(recipient_id, text):
@@ -1768,7 +1826,121 @@ def generate_bot_reply(sender_id, user_text, attachments=None):
             "يرجى كتابة نوع جهازك (شاشة سمارت / أندرويد / آيفون) لتزويدك بالرابط والتعليمات المناسبة لك مباشرة. 🎬✨"
         )
 
-    # 2. App Download Links & Setup Instructions
+    # 2. Check Trial State & Single-Trial Anti-Abuse
+    session = USER_SESSIONS.get(str(sender_id), {})
+    current_state = session.get("state")
+
+    is_android_kw = any(k in t for k in ("اندرويد", "أندرويد", "شاشة", "تلفزيون", "سمارت", "سامسونج", "ال جي", "lg", "1"))
+    is_ios_kw = any(k in t for k in ("ايفون", "آيفون", "ios", "ايباد", "آيباد", "ابل", "apple", "2"))
+    is_trial_kw = any(k in t for k in ("تجربة", "تيست", "تجريب", "فحص", "كود تجربة", "تست", "جرب", "اجرب", "trial", "test"))
+
+    trials_db = load_trials_db()
+    has_previous_trial = str(sender_id) in trials_db
+
+    # Direct trial request with device mentioned together
+    if is_trial_kw and (is_android_kw or is_ios_kw):
+        if has_previous_trial:
+            return (
+                "عذراً عزيزي، لقد حصلت على حساب تجريبي مسبقاً لهذا الحساب. التجربة المجانية متاحة لمرة واحدة فقط لكل شخص لضمان ثبات وسرعة السيرفر لجميع المشتركين. ❤️\n\n"
+                "📌 لمعرفة باقات الاشتراك الرسمي والعروض الحالية، تفضل بإرسال كلمة: (الأسعار) ✨"
+            )
+        if is_ios_kw:
+            uname, upass = create_reseller_trial_line(sender_id)
+            save_trial_db(sender_id, "ios", {"username": uname, "password": upass})
+            USER_SESSIONS.pop(str(sender_id), None)
+            return (
+                "🍏 أهلاً وسهلاً بك! تم تجهيز حسابك التجريبي بنجاح 🎉\n\n"
+                "📱 خطوات تشغيل التجربة على أجهزة الآيفون والآيباد:\n\n"
+                "1️⃣ حمل تطبيق VAR Player من متجر App Store:\n"
+                "🔗 https://apps.apple.com/eg/app/var-player-unlock-your-world/id6477530321\n\n"
+                "2️⃣ افتح التطبيق واختر (كود / Code) واكتب الكود: 66601\n\n"
+                "3️⃣ ستظهر لك 3 خانات، املأها كالتالي:\n"
+                "• الخانة الأولى: اكتب فيها SS\n"
+                f"• الخانة الثانية (اسم المستخدم): {uname}\n"
+                f"• الخانة الثالثة (كلمة المرور): {upass}\n\n"
+                "⏱️ تنبيه: مدة التجربة 3 ساعات فقط من لحظة التفعيل، ومتاحة لمرة واحدة فقط لكل شخص.\n\n"
+                "نتمنى لك تجربة ممتعة بدون أي تقطيع! ولتثبيت اشتراكك الرسمي بعد التجربة، أرسل كلمة: (الأسعار) ❤️"
+            )
+        else:
+            save_trial_db(sender_id, "android")
+            USER_SESSIONS.pop(str(sender_id), None)
+            return (
+                "🤖 أهلاً بك! خطوات تشغيل التجربة المجانية (3 ساعات) على أجهزة الأندرويد والشاشات:\n\n"
+                "1️⃣ حمل التطبيق لجهازك:\n"
+                "• لهواتف الأندرويد من متجر Google Play:\n"
+                "🔗 https://play.google.com/store/apps/details?id=com.aistudio.cinemanapremium.wpxj\n"
+                "• للشاشات الذكية (Smart TV) وتي في بوكس عبر تطبيق Downloader:\n"
+                "🔢 الكود: 8572752\n\n"
+                "2️⃣ بعد فتح التطبيق، اضغط مباشرة على الزر:\n"
+                "👉 (تجربة مجاناً 3 ساعات)\n\n"
+                "⏱️ سيبدأ البث التجريبي فوراً وبدون الحاجة لإدخال أي حساب أو كود!\n\n"
+                "نتمنى لك مشاهدة ممتعة ✨ وإذا عجبك الاشتراك أرسل (الأسعار) لتثبيت باقتك الدائمة."
+            )
+
+    # State: user already asked for trial and is answering with their device
+    if current_state == "waiting_trial_device":
+        if has_previous_trial:
+            USER_SESSIONS.pop(str(sender_id), None)
+            return (
+                "عذراً عزيزي، لقد حصلت على حساب تجريبي مسبقاً لهذا الحساب. التجربة المجانية متاحة لمرة واحدة فقط لكل شخص لضمان ثبات وسرعة السيرفر. ❤️\n\n"
+                "📌 لمعرفة باقات الاشتراك الرسمي والعروض الحالية، أرسل كلمة: (الأسعار) ✨"
+            )
+
+        if is_ios_kw:
+            uname, upass = create_reseller_trial_line(sender_id)
+            save_trial_db(sender_id, "ios", {"username": uname, "password": upass})
+            USER_SESSIONS.pop(str(sender_id), None)
+            return (
+                "🍏 أهلاً وسهلاً بك! تم تجهيز حسابك التجريبي بنجاح 🎉\n\n"
+                "📱 خطوات تشغيل التجربة على أجهزة الآيفون والآيباد:\n\n"
+                "1️⃣ حمل تطبيق VAR Player من متجر App Store:\n"
+                "🔗 https://apps.apple.com/eg/app/var-player-unlock-your-world/id6477530321\n\n"
+                "2️⃣ افتح التطبيق واختر (كود / Code) واكتب الكود: 66601\n\n"
+                "3️⃣ ستظهر لك 3 خانات، املأها كالتالي:\n"
+                "• الخانة الأولى: اكتب فيها SS\n"
+                f"• الخانة الثانية (اسم المستخدم): {uname}\n"
+                f"• الخانة الثالثة (كلمة المرور): {upass}\n\n"
+                "⏱️ تنبيه: مدة التجربة 3 ساعات فقط من لحظة التفعيل، ومتاحة لمرة واحدة فقط لكل شخص.\n\n"
+                "نتمنى لك تجربة ممتعة بدون أي تقطيع! ولتثبيت اشتراكك الرسمي بعد التجربة، أرسل كلمة: (الأسعار) ❤️"
+            )
+        elif is_android_kw:
+            save_trial_db(sender_id, "android")
+            USER_SESSIONS.pop(str(sender_id), None)
+            return (
+                "🤖 أهلاً بك! خطوات تشغيل التجربة المجانية (3 ساعات) على أجهزة الأندرويد والشاشات:\n\n"
+                "1️⃣ حمل التطبيق لجهازك:\n"
+                "• لهواتف الأندرويد من متجر Google Play:\n"
+                "🔗 https://play.google.com/store/apps/details?id=com.aistudio.cinemanapremium.wpxj\n"
+                "• للشاشات الذكية (Smart TV) وتي في بوكس عبر تطبيق Downloader:\n"
+                "🔢 الكود: 8572752\n\n"
+                "2️⃣ بعد فتح التطبيق، اضغط مباشرة على الزر:\n"
+                "👉 (تجربة مجاناً 3 ساعات)\n\n"
+                "⏱️ سيبدأ البث التجريبي فوراً وبدون الحاجة لإدخال أي حساب أو كود!\n\n"
+                "نتمنى لك مشاهدة ممتعة ✨ وإذا عجبك الاشتراك أرسل (الأسعار) لتثبيت باقتك الدائمة."
+            )
+        else:
+            return (
+                "يرجى تحديد نوع جهازك لتزويدك بالطريقة الصحيحة:\n"
+                "• أرسل (أندرويد) إذا كان جهازك هاتف أندرويد أو شاشة سمارت.\n"
+                "• أرسل (آيفون) إذا كان جهازك آيفون أو آيباد (iOS)."
+            )
+
+    # Initial trial request
+    if is_trial_kw:
+        if has_previous_trial:
+            return (
+                "عذراً عزيزي، لقد حصلت على حساب تجريبي مسبقاً لهذا الحساب. التجربة المجانية متاحة لمرة واحدة فقط لكل شخص لضمان جودة واستقرار السيرفر. ❤️\n\n"
+                "📌 للاطلاع على باقات الاشتراك الحالية والعروض، أرسل كلمة: (الأسعار) ✨"
+            )
+        USER_SESSIONS[str(sender_id)] = {"state": "waiting_trial_device", "time": time.time()}
+        return (
+            "أهلاً وسهلاً بك! 🎉\nنوفر تجربة مجانية لمدة 3 ساعات لتجربة ثبات القنوات ومكتبة الأفلام والمسلسلات بجودة 4K.\n\n"
+            "📱 يرجى تحديد نوع جهازك لمعرفة طريقة التفعيل:\n\n"
+            "1️⃣ أرسل كلمة (أندرويد) إذا كان جهازك هاتف أندرويد أو شاشة سمارت.\n"
+            "2️⃣ أرسل كلمة (آيفون) إذا كان جهازك آيفون أو آيباد (iOS)."
+        )
+
+    # 3. App Download Links & Setup Instructions
     if any(k in t for k in ("تحميل", "تطبيق", "رابط", "برنامج", "تنزيل", "شلون احمل", "كيف احمل", "داونلودر", "downloader", "شاشة", "تلفزيون", "ايفون", "اندرويد", "ios", "apk")):
         return (
             "📲 روابط تحميل وتثبيت تطبيق سينمانا بريميوم حسب نوع جهازك:\n\n"
@@ -1785,7 +1957,7 @@ def generate_bot_reply(sender_id, user_text, attachments=None):
             "إذا محتاج مساعدة بالتثبيت أو كود التفعيل إحنا بخدمتك! 😊"
         )
 
-    # 3. Prices & Subscription Plans
+    # 4. Prices & Subscription Plans
     if any(k in t for k in ("سعر", "اسعار", "الاسعار", "باقة", "باقات", "اشتراك", "اشتراكات", "بكم", "بيش", "العروض", "عرض")):
         return (
             "🌟 عروض وباقات اشتراك سينمانا بريميوم (Cinemana Premium):\n\n"
@@ -1801,7 +1973,7 @@ def generate_bot_reply(sender_id, user_text, attachments=None):
             "💳 لمعرفة طرق الدفع والتحويل، أرسل: (الدفع)"
         )
 
-    # 4. Payment Methods & Account Details
+    # 5. Payment Methods & Account Details
     if any(k in t for k in ("دفع", "طرق الدفع", "زين كاش", "تحويل", "ماستر", "كاش", "اسيا", "fib", "الرافدين", "رقم", "حساب")):
         return (
             "💳 طرق الدفع المعتمدة لدينا:\n\n"
@@ -1816,7 +1988,7 @@ def generate_bot_reply(sender_id, user_text, attachments=None):
             "⚠️ ملاحظة مهمة: بعد التحويل يرجى إبلاغنا مباشرة بنفس الدقيقة مع إرفاق صورة إشعار التحويل لتفعيل الاشتراك فوراً! 🚀"
         )
 
-    # 5. Features / Details
+    # 6. Features / Details
     if any(k in t for k in ("تفاصيل", "شنو بي", "شنو بيه", "قنوات", "بين سبورت", "bein", "مباريات", "افلام", "مسلسلات")):
         return (
             "📺 تفاصيل ومميزات اشتراك سينمانا بريميوم:\n\n"
@@ -1826,16 +1998,6 @@ def generate_bot_reply(sender_id, user_text, attachments=None):
             "• دعم كامل لجميع الشاشات الذكية، أجهزة التي في بوكس، الموبايلات (أندرويد وآيفون)، والكمبيوتر.\n\n"
             "📌 للاطلاع على الأسعار أرسل: (الأسعار)\n"
             "📌 لتحميل التطبيق أرسل: (تحميل)"
-        )
-
-    # 6. Test / Free Trial
-    if any(k in t for k in ("تجربة", "تيست", "تجريب", "فحص", "كود تجربة")):
-        return (
-            "🎁 أهلاً بك! يمكنك فحص وتشغيل الخدمة فوراً:\n\n"
-            "📱 حمل التطبيق لجهازك عبر إرسال كلمة: (تحميل)\n"
-            "🌐 أو تصفح البث المباشر والمكتبة عبر موقعنا:\n"
-            "https://cinemana.live\n\n"
-            "وإذا حبيت تثبت اشتراكك الرسمي والاستفادة من العروض الخاصة فقط أرسل: (الأسعار) ❤️"
         )
 
     # 7. Greetings / Default response
