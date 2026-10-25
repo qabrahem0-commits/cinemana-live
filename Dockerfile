@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir flask gunicorn
 
 COPY server.py /app/server.py
 COPY index.html /app/index.html
+COPY seo_sitemap_5000.json /app/seo_sitemap_5000.json
 
 RUN mkdir -p /tmp/hls_streams && chmod -R 777 /tmp/hls_streams /app
 
