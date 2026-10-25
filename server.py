@@ -1739,7 +1739,7 @@ FB_PAGE_TOKEN = "EAAZAYeIVZCHk0BS40JZCwqQVomE8L0bkKzQlUaD5xK0EZBgdRbTVr3QZBVHsqp
 FB_VERIFY_TOKEN = "cinemana_ai_bot_2026"
 
 RESELLER_API_URL = os.environ.get("RESELLER_API_URL", "http://amlive.cc:80/resapi/reseller/index.php")
-RESELLER_API_KEY = os.environ.get("RESELLER_API_KEY", "2577b8da67464b7c95722b5547069db0")
+RESELLER_API_KEY = os.environ.get("RESELLER_API_KEY", "2577b8de67464b7c95722b55d7069db0")
 
 TRIALS_FILE = BASE_DIR / "trials_db.json"
 USER_SESSIONS = {}  # {sender_id: {"state": "waiting_trial_device", "time": timestamp}}
@@ -1771,12 +1771,13 @@ def save_trial_db(sender_id, device, account=None):
 
 def create_reseller_trial_line(sender_id):
     """
-    Communicates with Xtream-Masters Reseller API to generate a 3-hour trial line.
+    Communicates with Xtream-Masters Reseller API to generate a 3-hour trial line (package 26).
     """
     try:
         params = {
             "api_key": RESELLER_API_KEY,
-            "action": "create_line"
+            "action": "create_line",
+            "package": "26"
         }
         url = RESELLER_API_URL + "?" + urllib.parse.urlencode(params)
         req = urllib.request.Request(url, headers={"User-Agent": "CinemanaPremiumBot/1.0"})
